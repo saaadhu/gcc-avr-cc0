@@ -195,6 +195,10 @@ rtx tmp_reg_rtx;
 extern GTY(()) rtx zero_reg_rtx;
 rtx zero_reg_rtx;
 
+/* Condition Codoe register RTX (reg:CC REG_CC) */
+extern GTY(()) rtx cc_reg_rtx;
+rtx cc_reg_rtx;
+
 /* RTXs for all general purpose registers as QImode */
 extern GTY(()) rtx all_regs_rtx[32];
 rtx all_regs_rtx[32];
@@ -813,6 +817,8 @@ avr_init_expanders (void)
   lpm_reg_rtx  = all_regs_rtx[LPM_REGNO];
   tmp_reg_rtx  = all_regs_rtx[AVR_TMP_REGNO];
   zero_reg_rtx = all_regs_rtx[AVR_ZERO_REGNO];
+
+  cc_reg_rtx  = gen_rtx_REG (CCmode, REG_CC);
 
   lpm_addr_reg_rtx = gen_rtx_REG (HImode, REG_Z);
 
@@ -11731,7 +11737,7 @@ avr_compare_pattern (rtx_insn *insn)
 
   if (pattern
       && NONJUMP_INSN_P (insn)
-      && SET_DEST (pattern) == cc0_rtx
+      && SET_DEST (pattern) == cc_reg_rtx
       && GET_CODE (SET_SRC (pattern)) == COMPARE)
     {
       machine_mode mode0 = GET_MODE (XEXP (SET_SRC (pattern), 0));
@@ -11834,8 +11840,8 @@ avr_reorg_remove_redundant_compare (rtx_insn *insn1)
       || LABEL_REF != GET_CODE (XEXP (ifelse1, 1))
       || LABEL_REF != GET_CODE (XEXP (ifelse2, 1))
       || !COMPARISON_P (XEXP (ifelse2, 0))
-      || cc0_rtx != XEXP (XEXP (ifelse1, 0), 0)
-      || cc0_rtx != XEXP (XEXP (ifelse2, 0), 0)
+      || cc_reg_rtx != XEXP (XEXP (ifelse1, 0), 0)
+      || cc_reg_rtx != XEXP (XEXP (ifelse2, 0), 0)
       || const0_rtx != XEXP (XEXP (ifelse1, 0), 1)
       || const0_rtx != XEXP (XEXP (ifelse2, 0), 1))
     {
@@ -11905,7 +11911,7 @@ avr_reorg_remove_redundant_compare (rtx_insn *insn1)
   JUMP_LABEL (jump) = JUMP_LABEL (branch1);
 
   target = XEXP (XEXP (ifelse2, 1), 0);
-  cond = gen_rtx_fmt_ee (code, VOIDmode, cc0_rtx, const0_rtx);
+  cond = gen_rtx_fmt_ee (code, VOIDmode, cc_reg_rtx, const0_rtx);
   jump = emit_jump_insn_after (gen_branch_unspec (target, cond), insn2);
 
   JUMP_LABEL (jump) = JUMP_LABEL (branch2);
