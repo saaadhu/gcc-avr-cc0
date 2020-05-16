@@ -6079,16 +6079,30 @@
   [(set (match_operand:QI 0 "register_operand" "")
         (subreg:QI (match_operand:PSI 1 "register_operand" "")
                    2))
-   (set (cc0)
-        (compare (match_dup 0)
-                 (const_int 0)))
    (set (pc)
-        (if_then_else (ge (cc0)
+        (if_then_else (ge (match_dup 0)
                           (const_int 0))
                       (label_ref (match_operand 2 "" ""))
                       (pc)))
    (set (match_dup 0)
         (const_int -1))])
+
+(define_insn_and_split "*flash_segment1"
+  [(set (pc)
+        (if_then_else (ge (match_operand:QI 0 "register_operand" "")
+                          (const_int 0))
+         (label_ref (match_operand 1 "" ""))
+         (pc)))]
+   ""
+   "#"
+   "reload_completed"
+   [(set (reg:CC REG_CC)
+         (compare:CC (match_dup 0) (const_int 0)))
+    (set (pc)
+         (if_then_else (ge (reg:CC REG_CC) (const_int 0))
+                       (label_ref (match_dup 1))
+                       (pc)))]
+   "")
 
 (define_expand "flash_segment"
   [(parallel [(match_operand:QI 0 "register_operand" "")
