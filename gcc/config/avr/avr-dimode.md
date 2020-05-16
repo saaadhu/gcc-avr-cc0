@@ -333,13 +333,28 @@
 ;; "cbranchda4" "cbranchuda4"
 ;; "cbranchta4" "cbranchuta4"
 (define_expand "cbranch<mode>4"
-  [(parallel [(match_operand:ALL8 1 "register_operand" "")
-              (match_operand:ALL8 2 "nonmemory_operand" "")
-              (match_operator 0 "ordered_comparison_operator" [(cc0)
-                                                               (const_int 0)])
-              (label_ref (match_operand 3 "" ""))])]
+  [(set (pc)
+        (if_then_else (match_operator 0 "ordered_comparison_operator"
+                        [(match_operand:ALL8 1 "register_operand" "")
+                         (match_operand:ALL8 2 "nonmemory_operand" "")])
+         (label_ref (match_operand 3 "" ""))
+         (pc)))]
   "avr_have_dimode"
-  {
+  )
+
+(define_insn_and_split "*cbranch<mode>4"
+  [(set (pc)
+        (if_then_else (match_operator 0 "ordered_comparison_operator"
+                        [(match_operand:ALL8 1 "register_operand" "r")
+                         (match_operand:ALL8 2 "nonmemory_operand" "n")])
+         (label_ref (match_operand 3 "" ""))
+         (pc)))]
+   "avr_have_dimode"
+   "#"
+   "reload_completed"
+   [(const_int 0)]
+   "
+   {
     rtx acc_a = gen_rtx_REG (<MODE>mode, ACC_A);
 
     avr_fix_inputs (operands, 1 << 2, regmask (<MODE>mode, ACC_A));
@@ -362,7 +377,7 @@
 
     emit_jump_insn (gen_conditional_jump (operands[0], operands[3]));
     DONE;
-  })
+   }")
 
 ;; "compare_di2"
 ;; "compare_dq2" "compare_udq2"
