@@ -58,6 +58,7 @@
    (REG_Z       30)
    (REG_W       24)
    (REG_SP      32)
+   (REG_CC      36)
    (LPM_REGNO   0)      ; implicit target register of LPM
    (TMP_REGNO   0)      ; temporary register r0
    (ZERO_REGNO  1)      ; zero register r1
@@ -4810,34 +4811,114 @@
 ;; ----------------------------------------------------------------------
 ;; Conditional jump instructions
 
-;; "cbranchqi4"
-;; "cbranchqq4"  "cbranchuqq4"
 (define_expand "cbranch<mode>4"
-  [(set (cc0)
-        (compare (match_operand:ALL1 1 "register_operand" "")
-                 (match_operand:ALL1 2 "nonmemory_operand" "")))
-   (set (pc)
-        (if_then_else
-         (match_operator 0 "ordered_comparison_operator" [(cc0)
-                                                          (const_int 0)])
+  [(set (pc)
+        (if_then_else (match_operator 0 "ordered_comparison_operator"
+                        [(match_operand:ALL1 1 "register_operand" "")
+                         (match_operand:ALL1 2 "nonmemory_operand" "")])
          (label_ref (match_operand 3 "" ""))
          (pc)))])
 
-;; "cbranchhi4"  "cbranchhq4"  "cbranchuhq4"  "cbranchha4"  "cbranchuha4"
-;; "cbranchsi4"  "cbranchsq4"  "cbranchusq4"  "cbranchsa4"  "cbranchusa4"
-;; "cbranchpsi4"
 (define_expand "cbranch<mode>4"
-  [(parallel [(set (cc0)
-                   (compare (match_operand:ORDERED234 1 "register_operand" "")
-                            (match_operand:ORDERED234 2 "nonmemory_operand" "")))
-              (clobber (match_scratch:QI 4 ""))])
-   (set (pc)
-        (if_then_else
-         (match_operator 0 "ordered_comparison_operator" [(cc0)
-                                                          (const_int 0)])
-         (label_ref (match_operand 3 "" ""))
-         (pc)))])
+  [(parallel
+     [(set (pc)
+           (if_then_else
+             (match_operator 0 "ordered_comparison_operator"
+               [(match_operand:ORDERED234 1 "register_operand" "")
+                (match_operand:ORDERED234 2 "nonmemory_operand" "")])
+             (label_ref (match_operand 3 "" ""))
+             (pc)))
+      (clobber (match_scratch:QI 4 ""))])])
 
+;; "*cbranchqi4"
+;; "*cbranchqq4"  "*cbranchuqq4"
+(define_insn_and_split "*cbranch<mode>4"
+  [(set (pc)
+        (if_then_else (match_operator 0 "ordered_comparison_operator"
+                        [(match_operand:ALL1 1 "register_operand" "r  ,r,d")
+                         (match_operand:ALL1 2 "nonmemory_operand" "Y00,r,i")])
+         (label_ref (match_operand 3 "" ""))
+         (pc)))]
+   ""
+   "#"
+   "reload_completed"
+   [(set (reg:CC REG_CC)
+                    (compare:CC (match_dup 1) (match_dup 2)))
+    (set (pc)
+         (if_then_else (match_op_dup 0
+                         [(reg:CC REG_CC) (const_int 0)])
+                       (label_ref (match_dup 3))
+                       (pc)))]
+   "")
+
+;; "*cbranchsi4"  "*cbranchsq4"  "*cbranchusq4"  "*cbranchsa4"  "*cbranchusa4"
+(define_insn_and_split "*cbranch<mode>4"
+  [(set (pc)
+           (if_then_else
+             (match_operator 0 "ordered_comparison_operator"
+               [(match_operand:ALL4 1 "register_operand" "r  ,r ,d,r ,r")
+                (match_operand:ALL4 2 "nonmemory_operand" "Y00,r ,M,M ,n Ynn")])
+             (label_ref (match_operand 3 "" ""))
+             (pc)))
+   (clobber (match_scratch:QI 4 "=X  ,X ,X,&d,&d"))]
+   ""
+   "#"
+   "reload_completed"
+   [(parallel [(set (reg:CC REG_CC)
+                    (compare:CC (match_dup 1) (match_dup 2)))
+               (clobber (match_dup 4))])
+    (set (pc)
+         (if_then_else (match_op_dup 0
+                         [(reg:CC REG_CC) (const_int 0)])
+                       (label_ref (match_dup 3))
+                       (pc)))]
+   "")
+
+;; "*cbranchpsi4"
+(define_insn_and_split "*cbranchpsi4"
+  [(set (pc)
+           (if_then_else
+             (match_operator 0 "ordered_comparison_operator"
+               [(match_operand:PSI 1 "register_operand" "r,r,d ,r  ,d,r")
+                (match_operand:PSI 2 "nonmemory_operand" "L,r,s ,s  ,M,n")])
+             (label_ref (match_operand 3 "" ""))
+             (pc)))
+   (clobber (match_scratch:QI 4 "=X,X,&d,&d ,X,&d"))]
+   ""
+   "#"
+   "reload_completed"
+   [(parallel [(set (reg:CC REG_CC)
+                    (compare:CC (match_dup 1) (match_dup 2)))
+               (clobber (match_dup 4))])
+    (set (pc)
+         (if_then_else (match_op_dup 0
+                         [(reg:CC REG_CC) (const_int 0)])
+                       (label_ref (match_dup 3))
+                       (pc)))]
+   "")
+
+;; "*cbranchhi4"  "*cbranchhq4"  "*cbranchuhq4"  "*cbranchha4"  "*cbranchuha4"
+(define_insn_and_split "*cbranch<mode>4"
+  [(set (pc)
+           (if_then_else
+             (match_operator 0 "ordered_comparison_operator"
+               [(match_operand:ALL2 1 "register_operand" "!w  ,r  ,r,d ,r  ,d,r")
+                (match_operand:ALL2 2 "nonmemory_operand" "Y00,Y00,r,s ,s  ,M,n Ynn")])
+             (label_ref (match_operand 3 "" ""))
+             (pc)))
+   (clobber (match_scratch:QI 4 "=X  ,X  ,X,&d,&d ,X,&d"))]
+   ""
+   "#"
+   "reload_completed"
+   [(parallel [(set (reg:CC REG_CC)
+                    (compare:CC (match_dup 1) (match_dup 2)))
+               (clobber (match_dup 4))])
+    (set (pc)
+         (if_then_else (match_op_dup 0
+                         [(reg:CC REG_CC) (const_int 0)])
+                       (label_ref (match_dup 3))
+                       (pc)))]
+   "")
 
 ;; Test a single bit in a QI/HI/SImode register.
 ;; Combine will create zero extract patterns for single bit tests.
