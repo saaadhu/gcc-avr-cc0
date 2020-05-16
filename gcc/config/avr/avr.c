@@ -9619,6 +9619,18 @@ avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
   return default_assemble_integer (x, size, aligned_p);
 }
 
+/* Implement TARGET_CLASS_MAX_NREGS. Reasons described in comments for
+   avr_hard_regno_nregs. */
+
+static unsigned char
+avr_class_max_nregs (reg_class_t rclass, machine_mode mode)
+{
+  if (rclass == CC_REG && mode == CCmode)
+	return 1;
+
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+}
+
 
 /* Implement `TARGET_CLASS_LIKELY_SPILLED_P'.  */
 /* Return value is nonzero if pseudos that have been
@@ -12117,6 +12129,22 @@ jump_over_one_insn_p (rtx_insn *insn, rtx dest)
   return (jump_offset == 1
           || (jump_offset == 2
               && avr_2word_insn_p (next_active_insn (insn))));
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS. CCmode is four units for historical
+   reasons. If this hook is not defined, TARGET_HARD_REGNO_NREGS
+   reports that CCmode requires four registers.
+   Define this hook to allow CCmode to fit in a single REG_CC. For
+   other modes and regs, return the number of words in mode (i.e whatever
+   the default implementation of the hook returned). */
+
+static unsigned int
+avr_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (regno == REG_CC && mode == CCmode)
+    return 1;
+
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
 }
 
 
@@ -14669,6 +14697,9 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE avr_conditional_register_usage
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS avr_hard_regno_nregs
+
 #undef  TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK avr_hard_regno_mode_ok
 #undef  TARGET_HARD_REGNO_SCRATCH_OK
@@ -14693,6 +14724,9 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
 
 #undef  TARGET_CLASS_LIKELY_SPILLED_P
 #define TARGET_CLASS_LIKELY_SPILLED_P avr_class_likely_spilled_p
+
+#undef  TARGET_CLASS_MAX_NREGS
+#define TARGET_CLASS_MAX_NREGS avr_class_max_nregs
 
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE avr_option_override
