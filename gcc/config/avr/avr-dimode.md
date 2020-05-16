@@ -320,12 +320,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_expand "conditional_jump"
-  [(set (pc)
-        (if_then_else
-         (match_operator 0 "ordered_comparison_operator" [(cc0)
-                                                          (const_int 0)])
-         (label_ref (match_operand 1 "" ""))
-         (pc)))]
+  [(parallel
+     [(set (pc)
+           (if_then_else
+             (match_operator 0 "ordered_comparison_operator" [(reg:CC REG_CC)
+                                                              (const_int 0)])
+           (label_ref (match_operand 1 "" ""))
+           (pc)))
+      (clobber (reg:CC REG_CC))])]
   "avr_have_dimode")
 
 ;; "cbranchdi4"
@@ -348,19 +350,37 @@
     if (s8_operand (operands[2], VOIDmode))
       {
         emit_move_insn (gen_rtx_REG (QImode, REG_X), operands[2]);
-        emit_insn (gen_compare_const8_di2 ());
+        emit_jump_insn (gen_cbranch_const8_di2_split (operands[0], operands[3]));
       }
     else if (const_operand (operands[2], GET_MODE (operands[2])))
       {
-        emit_insn (gen_compare_const_<mode>2 (operands[2]));
+        emit_jump_insn (gen_cbranch_const_<mode>2_split (operands[0],
+                                                         operands[2],
+                                                         operands[3]));
       }
     else
       {
         emit_move_insn (gen_rtx_REG (<MODE>mode, ACC_B), operands[2]);
-        emit_insn (gen_compare_<mode>2 ());
+        emit_jump_insn (gen_cbranch_<mode>2_split (operands[0], operands[3]));
       }
+    DONE;
+   })
 
-    emit_jump_insn (gen_conditional_jump (operands[0], operands[3]));
+(define_insn_and_split "cbranch_<mode>2_split"
+  [(set (pc)
+        (if_then_else (match_operator 0 "ordered_comparison_operator"
+                        [(reg:ALL8 ACC_A)
+                         (reg:ALL8 ACC_B)])
+         (label_ref (match_operand 1 "" ""))
+         (pc)))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    emit_insn (gen_compare_<mode>2 ());
+    emit_jump_insn (gen_conditional_jump (operands[0], operands[1]));
     DONE;
   })
 
@@ -377,6 +397,24 @@
   [(set_attr "adjust_len" "call")
    (set_attr "cc" "compare")])
 
+(define_insn_and_split "cbranch_const8_di2_split"
+  [(set (pc)
+        (if_then_else (match_operator 0 "ordered_comparison_operator"
+                        [(reg:DI ACC_A)
+                         (sign_extend:DI (reg:QI REG_X))])
+         (label_ref (match_operand 1 "" ""))
+         (pc)))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    emit_insn (gen_compare_const8_di2 ());
+    emit_jump_insn (gen_conditional_jump (operands[0], operands[1]));
+    DONE;
+  })
+
 (define_insn "compare_const8_di2"
   [(set (cc0)
         (compare (reg:DI ACC_A)
@@ -385,6 +423,27 @@
   "%~call __cmpdi2_s8"
   [(set_attr "adjust_len" "call")
    (set_attr "cc" "compare")])
+
+(define_insn_and_split "cbranch_const_<mode>2_split"
+  [(set (pc)
+        (if_then_else (match_operator 0 "ordered_comparison_operator"
+                        [(reg:ALL8 ACC_A)
+                         (match_operand:ALL8 1 "const_operand" "n Ynn")])
+         (label_ref (match_operand 2 "" ""))
+         (pc)))
+   (clobber (reg:CC REG_CC))
+   (clobber (match_scratch:QI 3 "=&d"))]
+  "avr_have_dimode
+   && !s8_operand (operands[1], VOIDmode)"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    emit_insn (gen_compare_const_<mode>2 (operands[1], operands[3]));
+    emit_jump_insn (gen_conditional_jump (operands[0], operands[2]));
+    DONE;
+  })
+
 
 ;; "compare_const_di2"
 ;; "compare_const_dq2" "compare_const_udq2"
