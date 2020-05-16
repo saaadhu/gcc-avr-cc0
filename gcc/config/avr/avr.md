@@ -5408,13 +5408,13 @@
                    (plus:SI (match_dup 0)
                             (match_operand:SI 1 "const_int_operand")))
               (clobber (scratch:QI))])
-   (parallel [(set (cc0)
-                   (compare (match_dup 5)
+   (parallel [(set (reg:CC REG_CC)
+                   (compare:CC (match_dup 5)
                             (match_operand:SI 2 "const_int_operand")))
               (clobber (scratch:QI))])
 
    (set (pc)
-        (if_then_else (gtu (cc0)
+        (if_then_else (gtu (reg:CC REG_CC)
                            (const_int 0))
                       (label_ref (match_operand 4))
                       (pc)))
@@ -5427,7 +5427,7 @@
               (use (label_ref (match_operand 3)))
               (clobber (match_dup 7))
               (clobber (match_operand:QI 8))])]
-  "optimize
+  "reload_completed && optimize
    && avr_casei_sequence_check_operands (operands)"
   { gcc_unreachable(); }
   )
@@ -5437,8 +5437,8 @@
 ;; This instruction sets Z flag
 
 (define_insn "sez"
-  [(set (cc0) (const_int 0))]
-  ""
+  [(set (reg:CC REG_CC) (const_int 0))]
+  "reload_completed"
   "sez"
   [(set_attr "length" "1")
    (set_attr "cc" "compare")])
@@ -5573,12 +5573,12 @@
                    (plus:SI (match_dup 0)
                             (const_int -1)))
               (clobber (scratch:QI))])
-   (parallel [(set (cc0)
-                   (compare (match_dup 0)
+   (parallel [(set (reg:CC REG_CC)
+                   (compare:CC (match_dup 0)
                             (const_int -1)))
               (clobber (match_operand:QI 1 "d_register_operand" ""))])
    (set (pc)
-        (if_then_else (eqne (cc0)
+        (if_then_else (eqne (reg:CC REG_CC)
                             (const_int 0))
                       (label_ref (match_operand 2 "" ""))
                       (pc)))]
@@ -5616,12 +5616,12 @@
   [(set (match_operand:HI 0 "d_register_operand" "")
         (plus:HI (match_dup 0)
                  (const_int -1)))
-   (parallel [(set (cc0)
-                   (compare (match_dup 0)
+   (parallel [(set (reg:CC REG_CC)
+                   (compare:CC (match_dup 0)
                             (const_int -1)))
               (clobber (match_operand:QI 1 "d_register_operand" ""))])
    (set (pc)
-        (if_then_else (eqne (cc0)
+        (if_then_else (eqne (reg:CC REG_CC)
                             (const_int 0))
                       (label_ref (match_operand 2 "" ""))
                       (pc)))]
@@ -5657,12 +5657,12 @@
                    (plus:HI (match_dup 0)
                             (const_int -1)))
               (clobber (scratch:QI))])
-   (parallel [(set (cc0)
-                   (compare (match_dup 0)
+   (parallel [(set (reg:CC REG_CC)
+                   (compare:CC (match_dup 0)
                             (const_int -1)))
               (clobber (match_operand:QI 1 "d_register_operand" ""))])
    (set (pc)
-        (if_then_else (eqne (cc0)
+        (if_then_else (eqne (reg:CC REG_CC)
                             (const_int 0))
                       (label_ref (match_operand 2 "" ""))
                       (pc)))]
@@ -5698,12 +5698,12 @@
                    (plus:HI (match_dup 0)
                             (const_int -1)))
               (clobber (match_operand:QI 3 "d_register_operand" ""))])
-   (parallel [(set (cc0)
-                   (compare (match_dup 0)
+   (parallel [(set (reg:CC REG_CC)
+                   (compare:CC (match_dup 0)
                             (const_int -1)))
               (clobber (match_operand:QI 1 "d_register_operand" ""))])
    (set (pc)
-        (if_then_else (eqne (cc0)
+        (if_then_else (eqne (reg:CC REG_CC)
                             (const_int 0))
                       (label_ref (match_operand 2 "" ""))
                       (pc)))]
@@ -5735,11 +5735,11 @@
   [(set (match_operand:QI 0 "d_register_operand" "")
         (plus:QI (match_dup 0)
                  (const_int -1)))
-   (set (cc0)
-        (compare (match_dup 0)
+   (set (reg:CC REG_CC)
+        (compare:CC (match_dup 0)
                  (const_int -1)))
    (set (pc)
-        (if_then_else (eqne (cc0)
+        (if_then_else (eqne (reg:CC REG_CC)
                             (const_int 0))
                       (label_ref (match_operand 1 "" ""))
                       (pc)))]
@@ -5770,11 +5770,11 @@
 
 
 (define_peephole ; "*cpse.eq"
-  [(set (cc0)
-        (compare (match_operand:ALL1 1 "register_operand" "r,r")
+  [(set (reg:CC REG_CC)
+        (compare:CC (match_operand:ALL1 1 "register_operand" "r,r")
                  (match_operand:ALL1 2 "reg_or_0_operand" "r,Y00")))
    (set (pc)
-        (if_then_else (eq (cc0)
+        (if_then_else (eq (reg:CC REG_CC)
                           (const_int 0))
                       (label_ref (match_operand 0 "" ""))
                       (pc)))]
@@ -5805,11 +5805,11 @@
 ;; and thus longer and slower and not easy to be rolled back.
 
 (define_peephole ; "*cpse.ne"
-  [(set (cc0)
-        (compare (match_operand:ALL1 1 "register_operand" "")
+  [(set (reg:CC REG_CC)
+        (compare:CC (match_operand:ALL1 1 "register_operand" "")
                  (match_operand:ALL1 2 "reg_or_0_operand" "")))
    (set (pc)
-        (if_then_else (ne (cc0)
+        (if_then_else (ne (reg:CC REG_CC)
                           (const_int 0))
                       (label_ref (match_operand 0 "" ""))
                       (pc)))]
