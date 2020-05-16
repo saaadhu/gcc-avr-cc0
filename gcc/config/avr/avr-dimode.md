@@ -322,7 +322,7 @@
 (define_expand "conditional_jump"
   [(set (pc)
         (if_then_else
-         (match_operator 0 "ordered_comparison_operator" [(cc0)
+         (match_operator 0 "ordered_comparison_operator" [(reg:CC REG_CC)
                                                           (const_int 0)])
          (label_ref (match_operand 1 "" ""))
          (pc)))]
@@ -340,20 +340,6 @@
          (label_ref (match_operand 3 "" ""))
          (pc)))]
   "avr_have_dimode"
-  )
-
-(define_insn_and_split "*cbranch<mode>4"
-  [(set (pc)
-        (if_then_else (match_operator 0 "ordered_comparison_operator"
-                        [(match_operand:ALL8 1 "register_operand"  "r,  r,d")
-                         (match_operand:ALL8 2 "nonmemory_operand" "Y00,r,i")])
-         (label_ref (match_operand 3 "" ""))
-         (pc)))]
-   "avr_have_dimode"
-   "#"
-   "reload_completed"
-   [(const_int 0)]
-   "
    {
     rtx acc_a = gen_rtx_REG (<MODE>mode, ACC_A);
 
@@ -363,54 +349,109 @@
     if (s8_operand (operands[2], VOIDmode))
       {
         emit_move_insn (gen_rtx_REG (QImode, REG_X), operands[2]);
-        emit_insn (gen_compare_const8_di2 ());
+        emit_jump_insn (gen_cbranch_const8_di2_split (operands[0], operands[3]));
       }
     else if (const_operand (operands[2], GET_MODE (operands[2])))
       {
-        emit_insn (gen_compare_const_<mode>2 (operands[2]));
+        emit_jump_insn (gen_cbranch_const_<mode>2_split (operands[0],
+                                                         operands[2],
+                                                         operands[3]));
       }
     else
       {
         emit_move_insn (gen_rtx_REG (<MODE>mode, ACC_B), operands[2]);
-        emit_insn (gen_compare_<mode>2 ());
+        emit_jump_insn (gen_cbranch_<mode>2_split (operands[0], operands[3]));
       }
-
-    emit_jump_insn (gen_conditional_jump (operands[0], operands[3]));
     DONE;
-   }")
+   })
+
+(define_insn_and_split "cbranch_<mode>2_split"
+  [(set (pc)
+        (if_then_else (match_operator 0 "ordered_comparison_operator"
+                        [(reg:ALL8 ACC_A)
+                         (reg:ALL8 ACC_B)])
+         (label_ref (match_operand 1 "" ""))
+         (pc)))]
+  "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    emit_insn (gen_compare_<mode>2 ());
+    emit_jump_insn (gen_conditional_jump (operands[0], operands[1]));
+    DONE;
+  })
 
 ;; "compare_di2"
 ;; "compare_dq2" "compare_udq2"
 ;; "compare_da2" "compare_uda2"
 ;; "compare_ta2" "compare_uta2"
 (define_insn "compare_<mode>2"
-  [(set (cc0)
-        (compare (reg:ALL8 ACC_A)
+  [(set (reg:CC REG_CC)
+        (compare:CC (reg:ALL8 ACC_A)
                  (reg:ALL8 ACC_B)))]
-  "avr_have_dimode"
+  "reload_completed && avr_have_dimode"
   "%~call __cmpdi2"
   [(set_attr "adjust_len" "call")
    (set_attr "cc" "compare")])
 
-(define_insn "compare_const8_di2"
-  [(set (cc0)
-        (compare (reg:DI ACC_A)
-                 (sign_extend:DI (reg:QI REG_X))))]
+(define_insn_and_split "cbranch_const8_di2_split"
+  [(set (pc)
+        (if_then_else (match_operator 0 "ordered_comparison_operator"
+                        [(reg:DI ACC_A)
+                         (sign_extend:DI (reg:QI REG_X))])
+         (label_ref (match_operand 1 "" ""))
+         (pc)))]
   "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    emit_insn (gen_compare_const8_di2 ());
+    emit_jump_insn (gen_conditional_jump (operands[0], operands[1]));
+    DONE;
+  })
+
+(define_insn "compare_const8_di2"
+  [(set (reg:CC REG_CC)
+        (compare:CC (reg:DI ACC_A)
+                 (sign_extend:DI (reg:QI REG_X))))]
+  "reload_completed && avr_have_dimode"
   "%~call __cmpdi2_s8"
   [(set_attr "adjust_len" "call")
    (set_attr "cc" "compare")])
+
+(define_insn_and_split "cbranch_const_<mode>2_split"
+  [(set (pc)
+        (if_then_else (match_operator 0 "ordered_comparison_operator"
+                        [(reg:ALL8 ACC_A)
+                         (match_operand:ALL8 1 "const_operand" "n Ynn")])
+         (label_ref (match_operand 2 "" ""))
+         (pc)))
+   (clobber (match_scratch:QI 3 "=&d"))]
+  "avr_have_dimode
+   && !s8_operand (operands[1], VOIDmode)"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    emit_insn (gen_compare_const_<mode>2 (operands[1], operands[3]));
+    emit_jump_insn (gen_conditional_jump (operands[0], operands[2]));
+    DONE;
+  })
+
 
 ;; "compare_const_di2"
 ;; "compare_const_dq2" "compare_const_udq2"
 ;; "compare_const_da2" "compare_const_uda2"
 ;; "compare_const_ta2" "compare_const_uta2"
 (define_insn "compare_const_<mode>2"
-  [(set (cc0)
-        (compare (reg:ALL8 ACC_A)
+  [(set (reg:CC REG_CC)
+        (compare:CC (reg:ALL8 ACC_A)
                  (match_operand:ALL8 0 "const_operand" "n Ynn")))
-   (clobber (match_scratch:QI 1 "=&d"))]
-  "avr_have_dimode
+   (clobber (match_operand:QI 1 "register_operand" "=&d"))]
+  "reload_completed
+   && avr_have_dimode
    && !s8_operand (operands[0], VOIDmode)"
   {
     return avr_out_compare64 (insn, operands, NULL);
