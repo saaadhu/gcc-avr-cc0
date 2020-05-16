@@ -4586,28 +4586,28 @@
 
 ; Optimize negated tests into reverse compare if overflow is undefined.
 (define_insn "*negated_tstqi"
-  [(set (cc0)
-        (compare (neg:QI (match_operand:QI 0 "register_operand" "r"))
+  [(set (reg:CC REG_CC)
+        (compare:CC (neg:QI (match_operand:QI 0 "register_operand" "r"))
                  (const_int 0)))]
-  "!flag_wrapv && !flag_trapv"
+  "reload_completed && !flag_wrapv && !flag_trapv"
   "cp __zero_reg__,%0"
   [(set_attr "cc" "compare")
    (set_attr "length" "1")])
 
 (define_insn "*reversed_tstqi"
-  [(set (cc0)
-        (compare (const_int 0)
+  [(set (reg:CC REG_CC)
+        (compare:CC (const_int 0)
                  (match_operand:QI 0 "register_operand" "r")))]
-  ""
+  "reload_completed"
   "cp __zero_reg__,%0"
 [(set_attr "cc" "compare")
  (set_attr "length" "2")])
 
 (define_insn "*negated_tsthi"
-  [(set (cc0)
-        (compare (neg:HI (match_operand:HI 0 "register_operand" "r"))
+  [(set (reg:CC REG_CC)
+        (compare:CC (neg:HI (match_operand:HI 0 "register_operand" "r"))
                  (const_int 0)))]
-  "!flag_wrapv && !flag_trapv"
+  "reload_completed && !flag_wrapv && !flag_trapv"
   "cp __zero_reg__,%A0
 	cpc __zero_reg__,%B0"
 [(set_attr "cc" "compare")
@@ -4616,40 +4616,40 @@
 ;; Leave here the clobber used by the cmphi pattern for simplicity, even
 ;; though it is unused, because this pattern is synthesized by avr_reorg.
 (define_insn "*reversed_tsthi"
-  [(set (cc0)
-        (compare (const_int 0)
+  [(set (reg:CC REG_CC)
+        (compare:CC (const_int 0)
                  (match_operand:HI 0 "register_operand" "r")))
    (clobber (match_scratch:QI 1 "=X"))]
-  ""
+  "reload_completed"
   "cp __zero_reg__,%A0
 	cpc __zero_reg__,%B0"
 [(set_attr "cc" "compare")
  (set_attr "length" "2")])
 
 (define_insn "*negated_tstpsi"
-  [(set (cc0)
-        (compare (neg:PSI (match_operand:PSI 0 "register_operand" "r"))
+  [(set (reg:CC REG_CC)
+        (compare:CC (neg:PSI (match_operand:PSI 0 "register_operand" "r"))
                  (const_int 0)))]
-  "!flag_wrapv && !flag_trapv"
+  "reload_completed && !flag_wrapv && !flag_trapv"
   "cp __zero_reg__,%A0\;cpc __zero_reg__,%B0\;cpc __zero_reg__,%C0"
   [(set_attr "cc" "compare")
    (set_attr "length" "3")])
 
 (define_insn "*reversed_tstpsi"
-  [(set (cc0)
-        (compare (const_int 0)
+  [(set (reg:CC REG_CC)
+        (compare:CC (const_int 0)
                  (match_operand:PSI 0 "register_operand" "r")))
    (clobber (match_scratch:QI 1 "=X"))]
-  ""
+  "reload_completed"
   "cp __zero_reg__,%A0\;cpc __zero_reg__,%B0\;cpc __zero_reg__,%C0"
   [(set_attr "cc" "compare")
    (set_attr "length" "3")])
 
 (define_insn "*negated_tstsi"
-  [(set (cc0)
-        (compare (neg:SI (match_operand:SI 0 "register_operand" "r"))
+  [(set (reg:CC REG_CC)
+        (compare:CC (neg:SI (match_operand:SI 0 "register_operand" "r"))
                  (const_int 0)))]
-  "!flag_wrapv && !flag_trapv"
+  "reload_completed && !flag_wrapv && !flag_trapv"
   "cp __zero_reg__,%A0
 	cpc __zero_reg__,%B0
 	cpc __zero_reg__,%C0
@@ -4661,11 +4661,11 @@
 ;; "*reversed_tstsq" "*reversed_tstusq"
 ;; "*reversed_tstsa" "*reversed_tstusa"
 (define_insn "*reversed_tst<mode>"
-  [(set (cc0)
-        (compare (match_operand:ALL4 0 "const0_operand"   "Y00")
+  [(set (reg:CC REG_CC)
+        (compare:CC (match_operand:ALL4 0 "const0_operand"   "Y00")
                  (match_operand:ALL4 1 "register_operand" "r")))
    (clobber (match_scratch:QI 2 "=X"))]
-  ""
+  "reload_completed"
   "cp __zero_reg__,%A1
 	cpc __zero_reg__,%B1
 	cpc __zero_reg__,%C1
@@ -4677,10 +4677,10 @@
 ;; "cmpqi3"
 ;; "cmpqq3" "cmpuqq3"
 (define_insn "cmp<mode>3"
-  [(set (cc0)
-        (compare (match_operand:ALL1 0 "register_operand"  "r  ,r,d")
+  [(set (reg:CC REG_CC)
+        (compare:CC (match_operand:ALL1 0 "register_operand"  "r  ,r,d")
                  (match_operand:ALL1 1 "nonmemory_operand" "Y00,r,i")))]
-  ""
+  "reload_completed"
   "@
 	tst %0
 	cp %0,%1
@@ -4689,29 +4689,29 @@
    (set_attr "length" "1,1,1")])
 
 (define_insn "*cmpqi_sign_extend"
-  [(set (cc0)
-        (compare (sign_extend:HI (match_operand:QI 0 "register_operand" "d"))
+  [(set (reg:CC REG_CC)
+        (compare:CC (sign_extend:HI (match_operand:QI 0 "register_operand" "d"))
                  (match_operand:HI 1 "s8_operand"                       "n")))]
-  ""
+  "reload_completed"
   "cpi %0,lo8(%1)"
   [(set_attr "cc" "compare")
    (set_attr "length" "1")])
 
 
 (define_insn "*cmphi.zero-extend.0"
-  [(set (cc0)
-        (compare (zero_extend:HI (match_operand:QI 0 "register_operand" "r"))
+  [(set (reg:CC REG_CC)
+        (compare:CC (zero_extend:HI (match_operand:QI 0 "register_operand" "r"))
                  (match_operand:HI 1 "register_operand" "r")))]
-  ""
+  "reload_completed"
   "cp %0,%A1\;cpc __zero_reg__,%B1"
   [(set_attr "cc" "compare")
    (set_attr "length" "2")])
 
 (define_insn "*cmphi.zero-extend.1"
-  [(set (cc0)
-        (compare (match_operand:HI 0 "register_operand" "r")
+  [(set (reg:CC REG_CC)
+        (compare:CC (match_operand:HI 0 "register_operand" "r")
                  (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))))]
-  ""
+  "reload_completed"
   "cp %A0,%1\;cpc %B0,__zero_reg__"
   [(set_attr "cc" "compare")
    (set_attr "length" "2")])
@@ -4720,11 +4720,11 @@
 ;; "cmphq3" "cmpuhq3"
 ;; "cmpha3" "cmpuha3"
 (define_insn "cmp<mode>3"
-  [(set (cc0)
-        (compare (match_operand:ALL2 0 "register_operand"  "!w  ,r  ,r,d ,r  ,d,r")
+  [(set (reg:CC REG_CC)
+        (compare:CC (match_operand:ALL2 0 "register_operand"  "!w  ,r  ,r,d ,r  ,d,r")
                  (match_operand:ALL2 1 "nonmemory_operand"  "Y00,Y00,r,s ,s  ,M,n Ynn")))
    (clobber (match_scratch:QI 2                            "=X  ,X  ,X,&d,&d ,X,&d"))]
-  ""
+  "reload_completed"
   {
     switch (which_alternative)
       {
@@ -4755,11 +4755,11 @@
    (set_attr "adjust_len" "tsthi,tsthi,*,*,*,compare,compare")])
 
 (define_insn "*cmppsi"
-  [(set (cc0)
-        (compare (match_operand:PSI 0 "register_operand"  "r,r,d ,r  ,d,r")
+  [(set (reg:CC REG_CC)
+        (compare:CC (match_operand:PSI 0 "register_operand"  "r,r,d ,r  ,d,r")
                  (match_operand:PSI 1 "nonmemory_operand" "L,r,s ,s  ,M,n")))
    (clobber (match_scratch:QI 2                          "=X,X,&d,&d ,X,&d"))]
-  ""
+  "reload_completed"
   {
     switch (which_alternative)
       {
@@ -4788,11 +4788,11 @@
 ;; "*cmpsq" "*cmpusq"
 ;; "*cmpsa" "*cmpusa"
 (define_insn "*cmp<mode>"
-  [(set (cc0)
-        (compare (match_operand:ALL4 0 "register_operand"  "r  ,r ,d,r ,r")
+  [(set (reg:CC REG_CC)
+        (compare:CC (match_operand:ALL4 0 "register_operand"  "r  ,r ,d,r ,r")
                  (match_operand:ALL4 1 "nonmemory_operand" "Y00,r ,M,M ,n Ynn")))
    (clobber (match_scratch:QI 2                           "=X  ,X ,X,&d,&d"))]
-  ""
+  "reload_completed"
   {
     if (0 == which_alternative)
       return avr_out_tstsi (insn, operands, NULL);
@@ -4980,9 +4980,9 @@
 
 ;; Convert sign tests to bit 7/15/31 tests that match the above insns.
 (define_peephole2
-  [(set (cc0) (compare (match_operand:QI 0 "register_operand" "")
+  [(set (reg:CC REG_CC) (compare:CC (match_operand:QI 0 "register_operand" "")
                        (const_int 0)))
-   (set (pc) (if_then_else (ge (cc0) (const_int 0))
+   (set (pc) (if_then_else (ge (reg:CC REG_CC) (const_int 0))
                            (label_ref (match_operand 1 "" ""))
                            (pc)))]
   ""
@@ -4994,9 +4994,9 @@
                            (pc)))])
 
 (define_peephole2
-  [(set (cc0) (compare (match_operand:QI 0 "register_operand" "")
+  [(set (reg:CC REG_CC) (compare:CC (match_operand:QI 0 "register_operand" "")
                        (const_int 0)))
-   (set (pc) (if_then_else (lt (cc0) (const_int 0))
+   (set (pc) (if_then_else (lt (reg:CC REG_CC) (const_int 0))
                            (label_ref (match_operand 1 "" ""))
                            (pc)))]
   ""
@@ -5008,10 +5008,10 @@
                            (pc)))])
 
 (define_peephole2
-  [(parallel [(set (cc0) (compare (match_operand:HI 0 "register_operand" "")
+  [(parallel [(set (reg:CC REG_CC) (compare:CC (match_operand:HI 0 "register_operand" "")
                                   (const_int 0)))
               (clobber (match_operand:HI 2 ""))])
-   (set (pc) (if_then_else (ge (cc0) (const_int 0))
+   (set (pc) (if_then_else (ge (reg:CC REG_CC) (const_int 0))
                            (label_ref (match_operand 1 "" ""))
                            (pc)))]
   ""
@@ -5021,10 +5021,10 @@
                            (pc)))])
 
 (define_peephole2
-  [(parallel [(set (cc0) (compare (match_operand:HI 0 "register_operand" "")
+  [(parallel [(set (reg:CC REG_CC) (compare:CC (match_operand:HI 0 "register_operand" "")
                                   (const_int 0)))
               (clobber (match_operand:HI 2 ""))])
-   (set (pc) (if_then_else (lt (cc0) (const_int 0))
+   (set (pc) (if_then_else (lt (reg:CC REG_CC) (const_int 0))
                            (label_ref (match_operand 1 "" ""))
                            (pc)))]
   ""
@@ -5034,10 +5034,10 @@
                            (pc)))])
 
 (define_peephole2
-  [(parallel [(set (cc0) (compare (match_operand:SI 0 "register_operand" "")
+  [(parallel [(set (reg:CC REG_CC) (compare:CC (match_operand:SI 0 "register_operand" "")
                                   (const_int 0)))
               (clobber (match_operand:SI 2 ""))])
-   (set (pc) (if_then_else (ge (cc0) (const_int 0))
+   (set (pc) (if_then_else (ge (reg:CC REG_CC) (const_int 0))
                            (label_ref (match_operand 1 "" ""))
                            (pc)))]
   ""
@@ -5048,10 +5048,10 @@
   "operands[2] = gen_int_mode (-2147483647 - 1, SImode);")
 
 (define_peephole2
-  [(parallel [(set (cc0) (compare (match_operand:SI 0 "register_operand" "")
+  [(parallel [(set (reg:CC REG_CC) (compare:CC (match_operand:SI 0 "register_operand" "")
                                   (const_int 0)))
               (clobber (match_operand:SI 2 ""))])
-   (set (pc) (if_then_else (lt (cc0) (const_int 0))
+   (set (pc) (if_then_else (lt (reg:CC REG_CC) (const_int 0))
                            (label_ref (match_operand 1 "" ""))
                            (pc)))]
   ""
@@ -5069,11 +5069,11 @@
 (define_insn "branch"
   [(set (pc)
         (if_then_else (match_operator 1 "simple_comparison_operator"
-                                      [(cc0)
+                                      [(reg:CC REG_CC)
                                        (const_int 0)])
                       (label_ref (match_operand 0 "" ""))
                       (pc)))]
-  ""
+  "reload_completed"
   {
     return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 0);
   }
@@ -5087,12 +5087,12 @@
 (define_insn "branch_unspec"
   [(set (pc)
         (unspec [(if_then_else (match_operator 1 "simple_comparison_operator"
-                                               [(cc0)
+                                               [(reg:CC REG_CC)
                                                 (const_int 0)])
                                (label_ref (match_operand 0 "" ""))
                                (pc))
                  ] UNSPEC_IDENTITY))]
-  ""
+  "reload_completed"
   {
     return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 0);
   }
@@ -5107,11 +5107,11 @@
 (define_insn "difficult_branch"
   [(set (pc)
         (if_then_else (match_operator 1 "difficult_comparison_operator"
-                        [(cc0)
+                        [(reg:CC REG_CC)
                          (const_int 0)])
                       (label_ref (match_operand 0 "" ""))
                       (pc)))]
-  ""
+  "reload_completed"
   {
     return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 0);
   }
@@ -5123,11 +5123,11 @@
 (define_insn "rvbranch"
   [(set (pc)
         (if_then_else (match_operator 1 "simple_comparison_operator"
-                                      [(cc0)
+                                      [(reg:CC REG_CC)
                                        (const_int 0)])
                       (pc)
                       (label_ref (match_operand 0 "" ""))))]
-  ""
+  "reload_completed"
   {
     return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 1);
   }
@@ -5137,11 +5137,11 @@
 (define_insn "difficult_rvbranch"
   [(set (pc)
         (if_then_else (match_operator 1 "difficult_comparison_operator"
-                                      [(cc0)
+                                      [(reg:CC REG_CC)
                                        (const_int 0)])
                       (pc)
                       (label_ref (match_operand 0 "" ""))))]
-  ""
+  "reload_completed"
   {
     return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 1);
   }
