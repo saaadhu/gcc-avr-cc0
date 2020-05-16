@@ -5335,14 +5335,10 @@
                    (plus:SI (match_operand:SI 0 "register_operand")
                             (match_operand:SI 1 "const_int_operand")))
               (clobber (scratch:QI))])
-   (parallel [(set (cc0)
-                   (compare (match_dup 5)
-                            (match_operand:SI 2 "const_int_operand")))
-              (clobber (scratch:QI))])
 
    (set (pc)
-        (if_then_else (gtu (cc0)
-                           (const_int 0))
+        (if_then_else (gtu (match_dup 5)
+                           (match_operand:SI 2 "const_int_operand"))
                       (label_ref (match_operand 4))
                       (pc)))
 
@@ -5373,6 +5369,25 @@
         operands[8] = const0_rtx;
       }
   })
+
+(define_insn_and_split "*casesi"
+  [(set (pc)
+        (if_then_else (gtu
+                        (match_operand:SI 0 "register_operand" "")
+                         (match_operand:SI 1 "const_int_operand" ""))
+         (label_ref (match_operand 2 "" ""))
+         (pc)))]
+   ""
+   "#"
+   "reload_completed"
+   [(parallel [(set (reg:CC REG_CC)
+                    (compare:CC (match_dup 0) (match_dup 1)))
+               (clobber (scratch:QI))])
+    (set (pc)
+         (if_then_else (gtu (reg:CC REG_CC) (const_int 0))
+                       (label_ref (match_dup 2))
+                       (pc)))]
+   "")
 
 
 ;; This insn is used only for easy operand extraction.
