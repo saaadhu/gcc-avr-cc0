@@ -492,19 +492,32 @@
 ;; "load_psi_libgcc"
 ;; "load_si_libgcc"
 ;; "load_sf_libgcc"
-(define_insn "load_<mode>_libgcc"
+(define_insn_and_split "load_<mode>_libgcc"
   [(set (reg:MOVMODE 22)
         (match_operand:MOVMODE 0 "memory_operand" "m,m"))]
   "avr_load_libgcc_p (operands[0])
    && REG_P (XEXP (operands[0], 0))
    && REG_Z == REGNO (XEXP (operands[0], 0))"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:MOVMODE 22)
+                    (match_dup 0))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*load_<mode>_libgcc"
+  [(set (reg:MOVMODE 22)
+        (match_operand:MOVMODE 0 "memory_operand" "m,m"))
+   (clobber (reg:CC REG_CC))]
+  "avr_load_libgcc_p (operands[0])
+   && REG_P (XEXP (operands[0], 0))
+   && REG_Z == REGNO (XEXP (operands[0], 0))
+   && reload_completed"
   {
     operands[0] = GEN_INT (GET_MODE_SIZE (<MODE>mode));
     return "%~call __load_%0";
   }
   [(set_attr "length" "1,2")
-   (set_attr "isa" "rjmp,jmp")
-   (set_attr "cc" "clobber")])
+   (set_attr "isa" "rjmp,jmp")])
 
 
 ;; "xload8qi_A"
