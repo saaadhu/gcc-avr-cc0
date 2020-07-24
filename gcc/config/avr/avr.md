@@ -1793,18 +1793,35 @@
 
 ;; "umulqi3_highpart"
 ;; "smulqi3_highpart"
-(define_insn "<extend_su>mulqi3_highpart"
+
+(define_insn_and_split "<extend_su>mulqi3_highpart"
   [(set (match_operand:QI 0 "register_operand"                                       "=r")
         (truncate:QI
          (lshiftrt:HI (mult:HI (any_extend:HI (match_operand:QI 1 "register_operand" "<mul_r_d>"))
                                (any_extend:HI (match_operand:QI 2 "register_operand" "<mul_r_d>")))
                       (const_int 8))))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (truncate:QI
+                    (lshiftrt:HI (mult:HI (any_extend:HI (match_dup 1))
+                                          (any_extend:HI (match_dup 2)))
+                                 (const_int 8))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<extend_su>mulqi3_highpart"
+  [(set (match_operand:QI 0 "register_operand"                                       "=r")
+        (truncate:QI
+         (lshiftrt:HI (mult:HI (any_extend:HI (match_operand:QI 1 "register_operand" "<mul_r_d>"))
+                               (any_extend:HI (match_operand:QI 2 "register_operand" "<mul_r_d>")))
+                      (const_int 8))))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "mul<extend_s> %1,%2
 	mov %0,r1
 	clr __zero_reg__"
-  [(set_attr "length" "3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "3")])
 
 
 ;; Used when expanding div or mod inline for some special values
