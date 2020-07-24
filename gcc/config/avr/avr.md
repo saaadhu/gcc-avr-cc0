@@ -1363,18 +1363,33 @@
   [(set_attr "length" "2")
    (set_attr "cc" "set_n")])
 
-(define_insn "*addhi3.sign_extend1"
+(define_insn_and_split "*addhi3.sign_extend1_split"
   [(set (match_operand:HI 0 "register_operand"                         "=r")
         (plus:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "r"))
                  (match_operand:HI 2 "register_operand"                 "0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel
+      [(set (match_dup 0)
+            (plus:HI
+              (sign_extend:HI (match_dup 1))
+              (match_dup 2)))
+       (clobber (reg:CC REG_CC))])])
+
+
+(define_insn "*addhi3.sign_extend1"
+  [(set (match_operand:HI 0 "register_operand"                         "=r")
+        (plus:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "r"))
+                 (match_operand:HI 2 "register_operand"                 "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return reg_overlap_mentioned_p (operands[0], operands[1])
       ? "mov __tmp_reg__,%1\;add %A0,%1\;adc %B0,__zero_reg__\;sbrc __tmp_reg__,7\;dec %B0"
       : "add %A0,%1\;adc %B0,__zero_reg__\;sbrc %1,7\;dec %B0";
   }
-  [(set_attr "length" "5")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "5")])
 
 (define_insn "*addhi3_zero_extend.const"
   [(set (match_operand:HI 0 "register_operand"                         "=d")
