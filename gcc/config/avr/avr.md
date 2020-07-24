@@ -1739,16 +1739,28 @@
       }
   })
 
-(define_insn "*mulqi3_enh"
+(define_insn_and_split "*mulqi3_enh_split"
   [(set (match_operand:QI 0 "register_operand" "=r")
         (mult:QI (match_operand:QI 1 "register_operand" "r")
                  (match_operand:QI 2 "register_operand" "r")))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (mult:QI (match_dup 1)
+                            (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mulqi3_enh"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+        (mult:QI (match_operand:QI 1 "register_operand" "r")
+                 (match_operand:QI 2 "register_operand" "r")))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "mul %1,%2
 	mov %0,r0
 	clr r1"
-  [(set_attr "length" "3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "3")])
 
 (define_expand "mulqi3_call"
   [(set (reg:QI 24) (match_operand:QI 1 "register_operand" ""))
