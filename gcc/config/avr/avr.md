@@ -1400,14 +1400,28 @@
   [(set_attr "length" "2")
    (set_attr "cc" "set_czn")])
 
-(define_insn "*usum_widenqihi3"
+(define_insn_and_split "*usum_widenqihi3_split"
   [(set (match_operand:HI 0 "register_operand"                          "=r")
         (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "0"))
                  (zero_extend:HI (match_operand:QI 2 "register_operand"  "r"))))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:HI
+                     (zero_extend:HI (match_dup 1))
+                     (zero_extend:HI (match_dup 2))))
+              (clobber (reg:CC REG_CC))])])
+
+
+(define_insn "*usum_widenqihi3"
+  [(set (match_operand:HI 0 "register_operand"                          "=r")
+        (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "0"))
+                 (zero_extend:HI (match_operand:QI 2 "register_operand"  "r"))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "add %A0,%2\;clr %B0\;rol %B0"
-  [(set_attr "length" "3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "3")])
 
 (define_insn "*udiff_widenqihi3"
   [(set (match_operand:HI 0 "register_operand"                           "=r")
