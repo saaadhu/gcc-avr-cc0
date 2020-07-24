@@ -1927,16 +1927,30 @@
 	adc %A0,__zero_reg__\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__"
   [(set_attr "length" "5")])
 
-(define_insn "*addsi3.lt0"
+(define_insn_and_split "*addsi3.lt0_split"
   [(set (match_operand:SI 0 "register_operand"                       "=r")
         (plus:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"  "r")
                               (const_int 31))
                  (match_operand:SI 2 "register_operand"               "0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:SI (lshiftrt:SI (match_dup 1)
+                                         (const_int 31))
+                            (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*addsi3.lt0"
+  [(set (match_operand:SI 0 "register_operand"                       "=r")
+        (plus:SI (lshiftrt:SI (match_operand:SI 1 "register_operand"  "r")
+                              (const_int 31))
+                 (match_operand:SI 2 "register_operand"               "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "mov __tmp_reg__,%D1\;lsl __tmp_reg__
 	adc %A0,__zero_reg__\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__"
-  [(set_attr "length" "6")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "6")])
 
 (define_insn "*umulqihi3.call"
   [(set (reg:HI 24)
