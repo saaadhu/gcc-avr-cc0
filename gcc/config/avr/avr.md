@@ -944,7 +944,8 @@
   "operands[1] != CONST0_RTX (<MODE>mode)"
   [(parallel [(set (match_dup 0)
                    (match_dup 1))
-              (clobber (match_dup 2))])])
+              (clobber (match_dup 2))
+              (clobber (reg:CC REG_CC))])])
 
 ;; '*' because it is not used in rtl generation.
 ;; "*reload_insi"
@@ -953,14 +954,14 @@
 (define_insn "*reload_insi"
   [(set (match_operand:ALL4 0 "register_operand"   "=r")
         (match_operand:ALL4 1 "immediate_operand"   "n Ynn"))
-   (clobber (match_operand:QI 2 "register_operand" "=&d"))]
+   (clobber (match_operand:QI 2 "register_operand" "=&d"))
+   (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
     return output_reload_insisf (operands, operands[2], NULL);
   }
   [(set_attr "length" "8")
-   (set_attr "adjust_len" "reload_in32")
-   (set_attr "cc" "clobber")])
+   (set_attr "adjust_len" "reload_in32")])
 
 
 ;; "*movsi"
