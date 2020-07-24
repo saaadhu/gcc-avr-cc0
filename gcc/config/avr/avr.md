@@ -747,8 +747,7 @@
   "reload_completed"
   "ldi %2,lo8(%1)
 	mov %0,%2"
-  [(set_attr "length" "2")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "2")])
 
 (define_peephole2
   [(match_scratch:QI 2 "d")
@@ -786,8 +785,7 @@
 	out %A0,%A1
 	out %A0,%A1\;out %B0,%B1"
   [(set_attr "length" "2,4,5,1,2")
-   (set_attr "isa" "no_xmega,no_xmega,no_xmega,*,xmega")
-   (set_attr "cc" "none")])
+   (set_attr "isa" "no_xmega,no_xmega,no_xmega,*,xmega")])
 
 (define_peephole2
   [(match_scratch:QI 2 "d")
@@ -796,7 +794,8 @@
   "operands[1] != CONST0_RTX (<MODE>mode)"
   [(parallel [(set (match_dup 0)
                    (match_dup 1))
-              (clobber (match_dup 2))])])
+              (clobber (match_dup 2))
+              (clobber (reg:CC REG_CC))])])
 
 ;; '*' because it is not used in rtl generation, only in above peephole
 ;; "*reload_inhi"
@@ -805,14 +804,14 @@
 (define_insn "*reload_in<mode>"
   [(set (match_operand:ALL2 0 "l_register_operand"  "=l")
         (match_operand:ALL2 1 "immediate_operand"    "i"))
-   (clobber (match_operand:QI 2 "register_operand" "=&d"))]
+   (clobber (match_operand:QI 2 "register_operand" "=&d"))
+   (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
     return output_reload_inhi (operands, operands[2], NULL);
   }
   [(set_attr "length" "4")
-   (set_attr "adjust_len" "reload_in16")
-   (set_attr "cc" "clobber")])
+   (set_attr "adjust_len" "reload_in16")])
 
 ;; "*movhi"
 ;; "*movhq" "*movuhq"
