@@ -1849,15 +1849,29 @@
   "sbrc %2,7\;inc %0"
   [(set_attr "length" "2")])
 
-(define_insn "*addqi3.lt0"
+(define_insn_and_split "*addqi3.lt0_split"
   [(set (match_operand:QI 0 "register_operand"                 "=r")
         (plus:QI (lt:QI (match_operand:QI 1 "register_operand"  "r")
                         (const_int 0))
                  (match_operand:QI 2 "register_operand"         "0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:QI (lt:QI (match_dup 1)
+                                   (const_int 0))
+                            (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*addqi3.lt0"
+  [(set (match_operand:QI 0 "register_operand"                 "=r")
+        (plus:QI (lt:QI (match_operand:QI 1 "register_operand"  "r")
+                        (const_int 0))
+                 (match_operand:QI 2 "register_operand"         "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "sbrc %1,7\;inc %0"
-  [(set_attr "length" "2")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "2")])
 
 (define_insn "*addhi3.lt0"
   [(set (match_operand:HI 0 "register_operand"                   "=w,r")
