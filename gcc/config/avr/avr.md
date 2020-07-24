@@ -1952,16 +1952,32 @@
 	adc %A0,__zero_reg__\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__"
   [(set_attr "length" "6")])
 
-(define_insn "*umulqihi3.call"
+(define_insn_and_split "*umulqihi3.call_split"
   [(set (reg:HI 24)
         (mult:HI (zero_extend:HI (reg:QI 22))
                  (zero_extend:HI (reg:QI 24))))
    (clobber (reg:QI 21))
    (clobber (reg:HI 22))]
   "!AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:HI 24)
+                   (mult:HI (zero_extend:HI (reg:QI 22))
+                   (zero_extend:HI (reg:QI 24))))
+              (clobber (reg:QI 21))
+              (clobber (reg:HI 22))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*umulqihi3.call"
+  [(set (reg:HI 24)
+        (mult:HI (zero_extend:HI (reg:QI 22))
+                 (zero_extend:HI (reg:QI 24))))
+   (clobber (reg:QI 21))
+   (clobber (reg:HI 22))
+   (clobber (reg:CC REG_CC))]
+  "!AVR_HAVE_MUL && reload_completed"
   "%~call __umulqihi3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; "umulqihi3"
 ;; "mulqihi3"
