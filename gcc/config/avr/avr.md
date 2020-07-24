@@ -1094,7 +1094,8 @@
 
 ;; "cpymemx_qi"
 ;; "cpymemx_hi"
-(define_insn "cpymemx_<mode>"
+
+(define_insn_and_split "cpymemx_<mode>"
   [(set (mem:BLK (reg:HI REG_X))
         (mem:BLK (lo_sum:PSI (reg:QI 23)
                              (reg:HI REG_Z))))
@@ -1108,9 +1109,39 @@
    (clobber (reg:QI 23))
    (clobber (mem:QI (match_operand:QI 1 "io_address_operand" "n")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (mem:BLK (reg:HI REG_X))
+                   (mem:BLK (lo_sum:PSI (reg:QI 23)
+                                        (reg:HI REG_Z))))
+              (unspec [(match_dup 0)]
+                      UNSPEC_CPYMEM)
+              (use (reg:QIHI 24))
+              (clobber (reg:HI REG_X))
+              (clobber (reg:HI REG_Z))
+              (clobber (reg:QI LPM_REGNO))
+              (clobber (reg:HI 24))
+              (clobber (reg:QI 23))
+              (clobber (mem:QI (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*cpymemx_<mode>"
+  [(set (mem:BLK (reg:HI REG_X))
+        (mem:BLK (lo_sum:PSI (reg:QI 23)
+                             (reg:HI REG_Z))))
+   (unspec [(match_operand:QI 0 "const_int_operand" "n")]
+           UNSPEC_CPYMEM)
+   (use (reg:QIHI 24))
+   (clobber (reg:HI REG_X))
+   (clobber (reg:HI REG_Z))
+   (clobber (reg:QI LPM_REGNO))
+   (clobber (reg:HI 24))
+   (clobber (reg:QI 23))
+   (clobber (mem:QI (match_operand:QI 1 "io_address_operand" "n")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __movmemx_<mode>"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 
 ;; =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2
