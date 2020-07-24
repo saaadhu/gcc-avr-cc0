@@ -2005,16 +2005,28 @@
 	clr __zero_reg__"
   [(set_attr "length" "3")])
 
-(define_insn "usmulqihi3"
+(define_insn_and_split "usmulqihi3"
   [(set (match_operand:HI 0 "register_operand"                         "=r")
         (mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "a"))
                  (sign_extend:HI (match_operand:QI 2 "register_operand" "a"))))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (mult:HI (zero_extend:HI (match_dup 1))
+                            (sign_extend:HI (match_dup 2))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*usmulqihi3"
+  [(set (match_operand:HI 0 "register_operand"                         "=r")
+        (mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "a"))
+                 (sign_extend:HI (match_operand:QI 2 "register_operand" "a"))))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "mulsu %2,%1
 	movw %0,r0
 	clr __zero_reg__"
-  [(set_attr "length" "3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "3")])
 
 ;; Above insn is not canonicalized by insn combine, so here is a version with
 ;; operands swapped.
