@@ -2107,18 +2107,32 @@
 ; multiply-add/sub QI: $0 = $3 +/- $1*$2
 ;******************************************************************************
 
-(define_insn "*maddqi4"
+(define_insn_and_split "*maddqi4_split"
   [(set (match_operand:QI 0 "register_operand"                  "=r")
         (plus:QI (mult:QI (match_operand:QI 1 "register_operand" "r")
                           (match_operand:QI 2 "register_operand" "r"))
                  (match_operand:QI 3 "register_operand"          "0")))]
 
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:QI (mult:QI (match_dup 1)
+                                     (match_dup 2))
+                            (match_dup 3)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*maddqi4"
+  [(set (match_operand:QI 0 "register_operand"                  "=r")
+        (plus:QI (mult:QI (match_operand:QI 1 "register_operand" "r")
+                          (match_operand:QI 2 "register_operand" "r"))
+                 (match_operand:QI 3 "register_operand"          "0")))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "mul %1,%2
 	add %A0,r0
 	clr __zero_reg__"
-  [(set_attr "length" "4")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "4")])
 
 (define_insn "*msubqi4"
   [(set (match_operand:QI 0 "register_operand"                   "=r")
