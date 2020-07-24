@@ -1981,16 +1981,29 @@
 
 ;; "umulqihi3"
 ;; "mulqihi3"
-(define_insn "<extend_u>mulqihi3"
+
+(define_insn_and_split "<extend_u>mulqihi3_split"
   [(set (match_operand:HI 0 "register_operand"                         "=r")
         (mult:HI (any_extend:HI (match_operand:QI 1 "register_operand" "<mul_r_d>"))
                  (any_extend:HI (match_operand:QI 2 "register_operand" "<mul_r_d>"))))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (mult:HI (any_extend:HI (match_dup 1))
+                            (any_extend:HI (match_dup 2))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "<extend_u>mulqihi3"
+  [(set (match_operand:HI 0 "register_operand"                         "=r")
+        (mult:HI (any_extend:HI (match_operand:QI 1 "register_operand" "<mul_r_d>"))
+                 (any_extend:HI (match_operand:QI 2 "register_operand" "<mul_r_d>"))))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "mul<extend_s> %1,%2
 	movw %0,r0
 	clr __zero_reg__"
-  [(set_attr "length" "3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "3")])
 
 (define_insn "usmulqihi3"
   [(set (match_operand:HI 0 "register_operand"                         "=r")
