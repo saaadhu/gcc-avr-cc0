@@ -2079,17 +2079,29 @@
 	clr __zero_reg__"
   [(set_attr "length" "4")])
 
-(define_insn "*oumulqihi3"
+(define_insn_and_split "*oumulqihi3_split"
   [(set (match_operand:HI 0 "register_operand"                                        "=&r")
         (mult:HI (not:HI (zero_extend:HI (not:QI (match_operand:QI 1 "register_operand" "r"))))
                  (zero_extend:HI (match_operand:QI 2 "register_operand"                 "r"))))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (mult:HI (not:HI (zero_extend:HI (not:QI (match_dup 1))))
+                            (zero_extend:HI (match_dup 2))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*oumulqihi3"
+  [(set (match_operand:HI 0 "register_operand"                                        "=&r")
+        (mult:HI (not:HI (zero_extend:HI (not:QI (match_operand:QI 1 "register_operand" "r"))))
+                 (zero_extend:HI (match_operand:QI 2 "register_operand"                 "r"))))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "mul %2,%1
 	movw %0,r0
 	sub %B0,%2
 	clr __zero_reg__"
-  [(set_attr "length" "4")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "4")])
 
 ;******************************************************************************
 ; multiply-add/sub QI: $0 = $3 +/- $1*$2
