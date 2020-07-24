@@ -1175,7 +1175,7 @@
   })
 
 
-(define_insn "*clrmemqi"
+(define_insn_and_split "*clrmemqi_split"
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "e"))
         (const_int 0))
    (use (match_operand:QI 1 "register_operand" "r"))
@@ -1183,9 +1183,27 @@
    (clobber (match_scratch:HI 3 "=0"))
    (clobber (match_scratch:QI 4 "=&1"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (mem:BLK (match_dup 0))
+                   (const_int 0))
+              (use (match_dup 1))
+              (use (match_dup 2))
+              (clobber (match_dup 3))
+              (clobber (match_dup 4))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*clrmemqi"
+  [(set (mem:BLK (match_operand:HI 0 "register_operand" "e"))
+        (const_int 0))
+   (use (match_operand:QI 1 "register_operand" "r"))
+   (use (match_operand:QI 2 "const_int_operand" "n"))
+   (clobber (match_scratch:HI 3 "=0"))
+   (clobber (match_scratch:QI 4 "=&1"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "0:\;st %a0+,__zero_reg__\;dec %1\;brne 0b"
-  [(set_attr "length" "3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "3")])
 
 
 (define_insn "*clrmemhi"
