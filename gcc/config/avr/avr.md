@@ -1873,18 +1873,34 @@
   "sbrc %1,7\;inc %0"
   [(set_attr "length" "2")])
 
-(define_insn "*addhi3.lt0"
+(define_insn_and_split "*addhi3.lt0_split"
   [(set (match_operand:HI 0 "register_operand"                   "=w,r")
         (plus:HI (lt:HI (match_operand:QI 1 "register_operand"    "r,r")
                         (const_int 0))
                  (match_operand:HI 2 "register_operand"           "0,0")))
    (clobber (match_scratch:QI 3                                  "=X,&1"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:HI (lt:HI (match_dup 1)
+                                   (const_int 0))
+                            (match_dup 2)))
+              (clobber (match_dup 3))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*addhi3.lt0"
+  [(set (match_operand:HI 0 "register_operand"                   "=w,r")
+        (plus:HI (lt:HI (match_operand:QI 1 "register_operand"    "r,r")
+                        (const_int 0))
+                 (match_operand:HI 2 "register_operand"           "0,0")))
+   (clobber (match_scratch:QI 3                                  "=X,&1"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	sbrc %1,7\;adiw %0,1
 	lsl %1\;adc %A0,__zero_reg__\;adc %B0,__zero_reg__"
-  [(set_attr "length" "2,3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "2,3")])
 
 (define_insn "*addpsi3.lt0"
   [(set (match_operand:PSI 0 "register_operand"                         "=r")
