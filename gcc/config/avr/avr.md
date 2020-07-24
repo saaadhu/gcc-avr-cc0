@@ -1902,16 +1902,30 @@
 	lsl %1\;adc %A0,__zero_reg__\;adc %B0,__zero_reg__"
   [(set_attr "length" "2,3")])
 
-(define_insn "*addpsi3.lt0"
+(define_insn_and_split "*addpsi3.lt0_split"
   [(set (match_operand:PSI 0 "register_operand"                         "=r")
         (plus:PSI (lshiftrt:PSI (match_operand:PSI 1 "register_operand"  "r")
                                 (const_int 23))
                  (match_operand:PSI 2 "register_operand"                 "0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:PSI (lshiftrt:PSI (match_dup 1)
+                                           (const_int 23))
+                             (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*addpsi3.lt0"
+  [(set (match_operand:PSI 0 "register_operand"                         "=r")
+        (plus:PSI (lshiftrt:PSI (match_operand:PSI 1 "register_operand"  "r")
+                                (const_int 23))
+                 (match_operand:PSI 2 "register_operand"                 "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "mov __tmp_reg__,%C1\;lsl __tmp_reg__
 	adc %A0,__zero_reg__\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__"
-  [(set_attr "length" "5")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "5")])
 
 (define_insn "*addsi3.lt0"
   [(set (match_operand:SI 0 "register_operand"                       "=r")
