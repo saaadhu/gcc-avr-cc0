@@ -1206,7 +1206,7 @@
   [(set_attr "length" "3")])
 
 
-(define_insn "*clrmemhi"
+(define_insn_and_split "*clrmemhi_split"
   [(set (mem:BLK (match_operand:HI 0 "register_operand" "e,e"))
         (const_int 0))
    (use (match_operand:HI 1 "register_operand" "!w,d"))
@@ -1214,11 +1214,30 @@
    (clobber (match_scratch:HI 3 "=0,0"))
    (clobber (match_scratch:HI 4 "=&1,&1"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (mem:BLK (match_dup 0))
+                   (const_int 0))
+              (use (match_dup 1))
+              (use (match_dup 2))
+              (clobber (match_dup 3))
+              (clobber (match_dup 4))
+              (clobber (reg:CC REG_CC))])])
+
+
+(define_insn "*clrmemhi"
+  [(set (mem:BLK (match_operand:HI 0 "register_operand" "e,e"))
+        (const_int 0))
+   (use (match_operand:HI 1 "register_operand" "!w,d"))
+   (use (match_operand:HI 2 "const_int_operand" "n,n"))
+   (clobber (match_scratch:HI 3 "=0,0"))
+   (clobber (match_scratch:HI 4 "=&1,&1"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	0:\;st %a0+,__zero_reg__\;sbiw %A1,1\;brne 0b
 	0:\;st %a0+,__zero_reg__\;subi %A1,1\;sbci %B1,0\;brne 0b"
-  [(set_attr "length" "3,4")
-   (set_attr "cc" "clobber,clobber")])
+  [(set_attr "length" "3,4")])
 
 (define_expand "strlenhi"
   [(set (match_dup 4)
