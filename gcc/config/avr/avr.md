@@ -1773,13 +1773,23 @@
     avr_fix_inputs (operands, 1 << 2, regmask (QImode, 24));
   })
 
-(define_insn "*mulqi3_call"
+(define_insn_and_split "*mulqi3_call_split"
   [(set (reg:QI 24) (mult:QI (reg:QI 24) (reg:QI 22)))
    (clobber (reg:QI 22))]
   "!AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:QI 24) (mult:QI (reg:QI 24) (reg:QI 22)))
+              (clobber (reg:QI 22))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mulqi3_call"
+  [(set (reg:QI 24) (mult:QI (reg:QI 24) (reg:QI 22)))
+   (clobber (reg:QI 22))
+   (clobber (reg:CC REG_CC))]
+  "!AVR_HAVE_MUL && reload_completed"
   "%~call __mulqi3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; "umulqi3_highpart"
 ;; "smulqi3_highpart"
