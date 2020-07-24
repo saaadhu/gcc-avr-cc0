@@ -1044,7 +1044,7 @@
 
 ;; "cpymem_qi"
 ;; "cpymem_hi"
-(define_insn "cpymem_<mode>"
+(define_insn_and_split "cpymem_<mode>"
   [(set (mem:BLK (reg:HI REG_X))
         (mem:BLK (reg:HI REG_Z)))
    (unspec [(match_operand:QI 0 "const_int_operand" "n")]
@@ -1055,11 +1055,35 @@
    (clobber (reg:QI LPM_REGNO))
    (clobber (match_operand:QIHI 2 "register_operand" "=1"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (mem:BLK (reg:HI REG_X))
+                   (mem:BLK (reg:HI REG_Z)))
+              (unspec [(match_dup 0)]
+                      UNSPEC_CPYMEM)
+              (use (match_dup 1))
+              (clobber (reg:HI REG_X))
+              (clobber (reg:HI REG_Z))
+              (clobber (reg:QI LPM_REGNO))
+              (clobber (match_dup 2))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*cpymem_<mode>"
+  [(set (mem:BLK (reg:HI REG_X))
+        (mem:BLK (reg:HI REG_Z)))
+        (unspec [(match_operand:QI 0 "const_int_operand" "n")]
+                UNSPEC_CPYMEM)
+        (use (match_operand:QIHI 1 "register_operand" "<CPYMEM_r_d>"))
+        (clobber (reg:HI REG_X))
+        (clobber (reg:HI REG_Z))
+        (clobber (reg:QI LPM_REGNO))
+        (clobber (match_operand:QIHI 2 "register_operand" "=1"))
+        (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_cpymem (insn, operands, NULL);
   }
-  [(set_attr "adjust_len" "cpymem")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "cpymem")])
 
 
 ;; $0    : Address Space
