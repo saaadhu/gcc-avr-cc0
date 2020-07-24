@@ -1664,18 +1664,31 @@
   [(set_attr "length" "2")
    (set_attr "cc" "set_czn")])
 
-(define_insn "*subhi3.sign_extend2"
+(define_insn_and_split "*subhi3.sign_extend2_split"
   [(set (match_operand:HI 0 "register_operand"                          "=r")
         (minus:HI (match_operand:HI 1 "register_operand"                 "0")
                   (sign_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                  (minus:HI (match_dup 1)
+                            (sign_extend:HI (match_dup 2))))
+              (clobber (reg:CC REG_CC))])])
+
+
+(define_insn "*subhi3.sign_extend2"
+  [(set (match_operand:HI 0 "register_operand"                          "=r")
+        (minus:HI (match_operand:HI 1 "register_operand"                 "0")
+                  (sign_extend:HI (match_operand:QI 2 "register_operand" "r"))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return reg_overlap_mentioned_p (operands[0], operands[2])
       ? "mov __tmp_reg__,%2\;sub %A0,%2\;sbc %B0,__zero_reg__\;sbrc __tmp_reg__,7\;inc %B0"
       : "sub %A0,%2\;sbc %B0,__zero_reg__\;sbrc %2,7\;inc %B0";
   }
-  [(set_attr "length" "5")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "5")])
 
 ;; "subsi3"
 ;; "subsq3" "subusq3"
