@@ -1825,15 +1825,29 @@
 
 
 ;; Used when expanding div or mod inline for some special values
-(define_insn "*subqi3.ashiftrt7"
+(define_insn_and_split "*subqi3.ashiftrt7_split"
   [(set (match_operand:QI 0 "register_operand"                       "=r")
         (minus:QI (match_operand:QI 1 "register_operand"              "0")
                   (ashiftrt:QI (match_operand:QI 2 "register_operand" "r")
                                (const_int 7))))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (minus:QI (match_dup 1)
+                             (ashiftrt:QI (match_dup 2)
+                                          (const_int 7))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*subqi3.ashiftrt7"
+  [(set (match_operand:QI 0 "register_operand"                       "=r")
+        (minus:QI (match_operand:QI 1 "register_operand"              "0")
+                  (ashiftrt:QI (match_operand:QI 2 "register_operand" "r")
+                               (const_int 7))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "sbrc %2,7\;inc %0"
-  [(set_attr "length" "2")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "2")])
 
 (define_insn "*addqi3.lt0"
   [(set (match_operand:QI 0 "register_operand"                 "=r")
