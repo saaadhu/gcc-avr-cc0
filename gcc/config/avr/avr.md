@@ -605,8 +605,7 @@
   }
   [(set_attr "length" "4,4")
    (set_attr "adjust_len" "*,xload")
-   (set_attr "isa" "lpmx,lpm")
-   (set_attr "cc" "none")])
+   (set_attr "isa" "lpmx,lpm")])
 
 ;; R21:Z : 24-bit source address
 ;; R22   : 1-4 byte output
@@ -616,21 +615,35 @@
 ;; "xload_si_libgcc" "xload_sq_libgcc" "xload_usq_libgcc" "xload_sa_libgcc" "xload_usa_libgcc"
 ;; "xload_sf_libgcc"
 ;; "xload_psi_libgcc"
-(define_insn "xload_<mode>_libgcc"
+
+(define_insn_and_split "xload_<mode>_libgcc"
   [(set (reg:MOVMODE 22)
         (mem:MOVMODE (lo_sum:PSI (reg:QI 21)
                                  (reg:HI REG_Z))))
    (clobber (reg:QI 21))
    (clobber (reg:HI REG_Z))]
   "avr_xload_libgcc_p (<MODE>mode)"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:MOVMODE 22)
+              (mem:MOVMODE (lo_sum:PSI (reg:QI 21)
+                                       (reg:HI REG_Z))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*xload_<mode>_libgcc"
+  [(set (reg:MOVMODE 22)
+        (mem:MOVMODE (lo_sum:PSI (reg:QI 21)
+                                 (reg:HI REG_Z))))
+   (clobber (reg:CC REG_CC))]
+  "avr_xload_libgcc_p (<MODE>mode)
+   && reload_completed"
   {
     rtx x_bytes = GEN_INT (GET_MODE_SIZE (<MODE>mode));
 
     output_asm_insn ("%~call __xload_%0", &x_bytes);
     return "";
   }
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 
 ;; General move expanders
