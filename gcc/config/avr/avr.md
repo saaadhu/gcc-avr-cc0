@@ -1263,16 +1263,33 @@
     operands[4] = gen_reg_rtx (HImode);
   })
 
-(define_insn "*strlenhi"
+(define_insn_and_split "*strlenhi_split"
   [(set (match_operand:HI 0 "register_operand"                      "=e")
         (unspec:HI [(mem:BLK (match_operand:HI 1 "register_operand"  "0"))
                     (const_int 0)
                     (match_operand:HI 2 "immediate_operand"          "i")]
                    UNSPEC_STRLEN))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel
+      [(set (match_dup 0)
+            (unspec:HI [(mem:BLK (match_dup 1))
+                        (const_int 0)
+                        (match_dup 2)]
+                       UNSPEC_STRLEN))
+       (clobber (reg:CC REG_CC))])])
+
+(define_insn "*strlenhi"
+  [(set (match_operand:HI 0 "register_operand"                      "=e")
+        (unspec:HI [(mem:BLK (match_operand:HI 1 "register_operand"  "0"))
+                    (const_int 0)
+                    (match_operand:HI 2 "immediate_operand"          "i")]
+                   UNSPEC_STRLEN))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "0:\;ld __tmp_reg__,%a0+\;tst __tmp_reg__\;brne 0b"
-  [(set_attr "length" "3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "3")])
 
 ;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ; add bytes
