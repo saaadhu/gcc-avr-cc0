@@ -904,20 +904,21 @@
    && operands[1] != constm1_rtx"
   [(parallel [(set (match_dup 0)
                    (match_dup 1))
-              (clobber (match_dup 2))])])
+              (clobber (match_dup 2))
+              (clobber (reg:CC REG_CC))])])
 
 ;; '*' because it is not used in rtl generation.
 (define_insn "*reload_inpsi"
   [(set (match_operand:PSI 0 "register_operand" "=r")
         (match_operand:PSI 1 "immediate_operand" "i"))
-   (clobber (match_operand:QI 2 "register_operand" "=&d"))]
+   (clobber (match_operand:QI 2 "register_operand" "=&d"))
+   (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
     return avr_out_reload_inpsi (operands, operands[2], NULL);
   }
   [(set_attr "length" "6")
-   (set_attr "adjust_len" "reload_in24")
-   (set_attr "cc" "clobber")])
+   (set_attr "adjust_len" "reload_in24")])
 
 (define_insn "*movpsi"
   [(set (match_operand:PSI 0 "nonimmediate_operand" "=r,r,r ,Qm,!d,r")
