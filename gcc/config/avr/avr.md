@@ -3666,7 +3666,7 @@
   "%~call __mulsqipsi3"
   [(set_attr "type" "xcall")])
 
-(define_insn "*mulpsi3.libgcc"
+(define_insn_and_split "*mulpsi3.libgcc_split"
   [(set (reg:PSI 22)
         (mult:PSI (reg:PSI 22)
                   (reg:PSI 18)))
@@ -3674,9 +3674,27 @@
    (clobber (reg:QI 25))
    (clobber (reg:HI 26))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:PSI 22)
+                   (mult:PSI (reg:PSI 22)
+                             (reg:PSI 18)))
+              (clobber (reg:QI 21))
+              (clobber (reg:QI 25))
+              (clobber (reg:HI 26))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mulpsi3.libgcc"
+  [(set (reg:PSI 22)
+        (mult:PSI (reg:PSI 22)
+                  (reg:PSI 18)))
+   (clobber (reg:QI 21))
+   (clobber (reg:QI 25))
+   (clobber (reg:HI 26))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "%~call __mulpsi3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
