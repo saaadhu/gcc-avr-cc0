@@ -6133,7 +6133,7 @@
   }
   [(set_attr "type" "branch1")])
 
-(define_insn "difficult_rvbranch"
+(define_insn_and_split "difficult_rvbranch"
   [(set (pc)
         (if_then_else (match_operator 1 "difficult_comparison_operator"
                                       [(reg:CC REG_CC)
@@ -6141,11 +6141,29 @@
                       (pc)
                       (label_ref (match_operand 0 "" ""))))]
   "reload_completed"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (pc)
+                   (if_then_else (match_op_dup 1
+                                               [(reg:CC REG_CC)
+                                                (const_int 0)])
+                                 (pc)
+                                 (label_ref (match_dup 0))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*difficult_rvbranch"
+  [(set (pc)
+        (if_then_else (match_operator 1 "difficult_comparison_operator"
+                                      [(reg:CC REG_CC)
+                                       (const_int 0)])
+                      (pc)
+                      (label_ref (match_operand 0 "" ""))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 1);
   }
-  [(set_attr "type" "branch")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "branch")])
 
 ;; **************************************************************************
 ;; Unconditional and other jump instructions.
