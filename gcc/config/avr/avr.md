@@ -5819,7 +5819,7 @@
 ;; Combine will create zero extract patterns for single bit tests.
 ;; permit any mode in source pattern by using VOIDmode.
 
-(define_insn "*sbrx_branch<mode>"
+(define_insn_and_split "*sbrx_branch<mode>_split"
   [(set (pc)
         (if_then_else
          (match_operator 0 "eqne_operator"
@@ -5831,6 +5831,33 @@
          (label_ref (match_operand 3 "" ""))
          (pc)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (pc)
+                   (if_then_else
+                    (match_op_dup 0
+                                  [(zero_extract:QIDI
+                                    (match_dup 1)
+                                    (const_int 1)
+                                    (match_dup 2))
+                                   (const_int 0)])
+                    (label_ref (match_dup 3))
+                    (pc)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*sbrx_branch<mode>"
+  [(set (pc)
+        (if_then_else
+         (match_operator 0 "eqne_operator"
+                         [(zero_extract:QIDI
+                           (match_operand:VOID 1 "register_operand" "r")
+                           (const_int 1)
+                           (match_operand 2 "const_int_operand" "n"))
+                          (const_int 0)])
+         (label_ref (match_operand 3 "" ""))
+         (pc)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_sbxx_branch (insn, operands);
   }
@@ -5840,8 +5867,7 @@
                       (const_int 2)
                       (if_then_else (match_test "!AVR_HAVE_JMP_CALL")
                                     (const_int 2)
-                                    (const_int 4))))
-   (set_attr "cc" "clobber")])
+                                    (const_int 4))))])
 
 ;; Same test based on bitwise AND.  Keep this in case gcc changes patterns.
 ;; or for old peepholes.
