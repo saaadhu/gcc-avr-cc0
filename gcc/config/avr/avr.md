@@ -4322,14 +4322,26 @@
   "lsl %A0\;rol %B0\;rol %C0\;adc %A0,__zero_reg__"
   [(set_attr "length" "4")])
 
-(define_insn "*rotlpsi2.23"
+(define_insn_and_split "*rotlpsi2.23_split"
   [(set (match_operand:PSI 0 "register_operand"            "=r")
         (rotate:PSI (match_operand:PSI 1 "register_operand" "0")
                     (const_int 23)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (rotate:PSI (match_dup 1)
+                               (const_int 23)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*rotlpsi2.23"
+  [(set (match_operand:PSI 0 "register_operand"            "=r")
+        (rotate:PSI (match_operand:PSI 1 "register_operand" "0")
+                    (const_int 23)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "bst %A0,0\;ror %C0\;ror %B0\;ror %A0\;bld %C0,7"
-  [(set_attr "length" "5")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "5")])
 
 (define_insn "*rotlsi2.1"
   [(set (match_operand:SI 0 "register_operand"           "=r")
