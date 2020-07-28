@@ -2829,14 +2829,26 @@
   })
 
 
-(define_insn "*mulhi3_call"
+(define_insn_and_split "*mulhi3_call_split"
   [(set (reg:HI 24) (mult:HI (reg:HI 24) (reg:HI 22)))
    (clobber (reg:HI 22))
    (clobber (reg:QI 21))]
   "!AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:HI 24) (mult:HI (reg:HI 24) (reg:HI 22)))
+              (clobber (reg:HI 22))
+              (clobber (reg:QI 21))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mulhi3_call"
+  [(set (reg:HI 24) (mult:HI (reg:HI 24) (reg:HI 22)))
+   (clobber (reg:HI 22))
+   (clobber (reg:QI 21))
+   (clobber (reg:CC REG_CC))]
+  "!AVR_HAVE_MUL && reload_completed"
   "%~call __mulhi3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; To support widening multiplication with constant we postpone
 ;; expanding to the implicit library call until post combine and
