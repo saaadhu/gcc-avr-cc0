@@ -2790,18 +2790,30 @@
       operands[2] = force_reg (HImode, operands[2]);
   })
 
-(define_insn "*mulhi3_enh"
+(define_insn_and_split "*mulhi3_enh_split"
   [(set (match_operand:HI 0 "register_operand" "=&r")
         (mult:HI (match_operand:HI 1 "register_operand" "r")
                  (match_operand:HI 2 "register_operand" "r")))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (mult:HI (match_dup 1)
+                            (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mulhi3_enh"
+  [(set (match_operand:HI 0 "register_operand" "=&r")
+        (mult:HI (match_operand:HI 1 "register_operand" "r")
+                 (match_operand:HI 2 "register_operand" "r")))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   {
     return REGNO (operands[1]) == REGNO (operands[2])
            ? "mul %A1,%A1\;movw %0,r0\;mul %A1,%B1\;add %B0,r0\;add %B0,r0\;clr r1"
            : "mul %A1,%A2\;movw %0,r0\;mul %A1,%B2\;add %B0,r0\;mul %B1,%A2\;add %B0,r0\;clr r1";
   }
-  [(set_attr "length" "7")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "7")])
 
 (define_expand "mulhi3_call"
   [(set (reg:HI 24) (match_operand:HI 1 "register_operand" ""))
