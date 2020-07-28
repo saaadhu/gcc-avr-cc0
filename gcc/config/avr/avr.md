@@ -4966,17 +4966,31 @@
    (set_attr "adjust_len" "lshrhi")
    (set_attr "cc" "clobber,none,clobber,clobber,clobber,clobber,clobber")])
 
-(define_insn "lshrpsi3"
+(define_insn_and_split "lshrpsi3"
   [(set (match_operand:PSI 0 "register_operand"                 "=r,r,r,r,r")
         (lshiftrt:PSI (match_operand:PSI 1 "register_operand"    "0,0,r,0,0")
                       (match_operand:QI 2 "nonmemory_operand"    "r,P,O,K,n")))
    (clobber (match_scratch:QI 3                                 "=X,X,X,X,&d"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (lshiftrt:PSI (match_dup 1)
+                                 (match_dup 2)))
+              (clobber (match_dup 3))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*lshrpsi3"
+  [(set (match_operand:PSI 0 "register_operand"                 "=r,r,r,r,r")
+        (lshiftrt:PSI (match_operand:PSI 1 "register_operand"    "0,0,r,0,0")
+                      (match_operand:QI 2 "nonmemory_operand"    "r,P,O,K,n")))
+   (clobber (match_scratch:QI 3                                 "=X,X,X,X,&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_lshrpsi3 (insn, operands, NULL);
   }
-  [(set_attr "adjust_len" "lshrpsi")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "lshrpsi")])
 
 ;; "lshrsi3"
 ;; "lshrsq3"  "lshrusq3"
