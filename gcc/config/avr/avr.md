@@ -3169,16 +3169,29 @@
     avr_fix_inputs (operands, 1 << 2, regmask (HImode, 18));
   })
 
-
-(define_insn "*mulsi3_call"
+(define_insn_and_split "*mulsi3_call_split"
   [(set (reg:SI 22)
         (mult:SI (reg:SI 22)
                  (reg:SI 18)))
    (clobber (reg:HI 26))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:SI 22)
+                   (mult:SI (reg:SI 22)
+                            (reg:SI 18)))
+              (clobber (reg:HI 26))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mulsi3_call"
+  [(set (reg:SI 22)
+        (mult:SI (reg:SI 22)
+                 (reg:SI 18)))
+   (clobber (reg:HI 26))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "%~call __mulsi3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; "*mulhisi3_call"
 ;; "*umulhisi3_call"
