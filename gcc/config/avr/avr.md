@@ -6222,23 +6222,37 @@
                         (match_operand:HI 2 "general_operand" "")))
              (use (const_int 1))])])
 
-(define_insn "call_insn"
+(define_insn_and_split "call_insn"
   [(parallel[(call (mem:HI (match_operand:HI 0 "nonmemory_operand" "z,s,z,s"))
                    (match_operand:HI 1 "general_operand"           "X,X,X,X"))
              (use (match_operand:HI 2 "const_int_operand"          "L,L,P,P"))])]
   ;; Operand 1 not used on the AVR.
   ;; Operand 2 is 1 for tail-call, 0 otherwise.
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(call (mem:HI (match_dup 0))
+                    (match_dup 1))
+              (use (match_dup 2))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*call_insn"
+  [(call (mem:HI (match_operand:HI 0 "nonmemory_operand" "z,s,z,s"))
+         (match_operand:HI 1 "general_operand"           "X,X,X,X"))
+   (use (match_operand:HI 2 "const_int_operand"          "L,L,P,P"))
+   (clobber (reg:CC REG_CC))]
+  ;; Operand 1 not used on the AVR.
+  ;; Operand 2 is 1 for tail-call, 0 otherwise.
+  "reload_completed"
   "@
     %!icall
     %~call %x0
     %!ijmp
     %~jmp %x0"
-  [(set_attr "cc" "clobber")
-   (set_attr "length" "1,*,1,*")
+  [(set_attr "length" "1,*,1,*")
    (set_attr "adjust_len" "*,call,*,call")])
 
-(define_insn "call_value_insn"
+(define_insn_and_split "call_value_insn"
   [(parallel[(set (match_operand 0 "register_operand"                   "=r,r,r,r")
                   (call (mem:HI (match_operand:HI 1 "nonmemory_operand"  "z,s,z,s"))
                         (match_operand:HI 2 "general_operand"            "X,X,X,X")))
@@ -6246,13 +6260,29 @@
   ;; Operand 2 not used on the AVR.
   ;; Operand 3 is 1 for tail-call, 0 otherwise.
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (call (mem:HI (match_dup 1))
+                         (match_dup 2)))
+              (use (match_dup 3))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*call_value_insn"
+  [(set (match_operand 0 "register_operand"                   "=r,r,r,r")
+        (call (mem:HI (match_operand:HI 1 "nonmemory_operand"  "z,s,z,s"))
+              (match_operand:HI 2 "general_operand"            "X,X,X,X")))
+   (use (match_operand:HI 3 "const_int_operand"                "L,L,P,P"))
+   (clobber (reg:CC REG_CC))]
+  ;; Operand 2 not used on the AVR.
+  ;; Operand 3 is 1 for tail-call, 0 otherwise.
+  "reload_completed"
   "@
     %!icall
     %~call %x1
     %!ijmp
     %~jmp %x1"
-  [(set_attr "cc" "clobber")
-   (set_attr "length" "1,*,1,*")
+  [(set_attr "length" "1,*,1,*")
    (set_attr "adjust_len" "*,call,*,call")])
 
 (define_insn "nop"
