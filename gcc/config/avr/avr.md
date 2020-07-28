@@ -4259,14 +4259,26 @@
       FAIL;
   })
 
-(define_insn "*rotlhi2.1"
+(define_insn_and_split "*rotlhi2.1_split"
   [(set (match_operand:HI 0 "register_operand"           "=r")
         (rotate:HI (match_operand:HI 1 "register_operand" "0")
                    (const_int 1)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (rotate:HI (match_dup 1)
+                              (const_int 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*rotlhi2.1"
+  [(set (match_operand:HI 0 "register_operand"           "=r")
+        (rotate:HI (match_operand:HI 1 "register_operand" "0")
+                   (const_int 1)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "lsl %A0\;rol %B0\;adc %A0,__zero_reg__"
-  [(set_attr "length" "3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "3")])
 
 (define_insn "*rotlhi2.15"
   [(set (match_operand:HI 0 "register_operand"           "=r")
