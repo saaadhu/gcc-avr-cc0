@@ -2691,18 +2691,30 @@
 	clr __zero_reg__"
   [(set_attr "length" "5")])
 
-(define_insn "muluqihi3"
+(define_insn_and_split "muluqihi3"
   [(set (match_operand:HI 0 "register_operand"                        "=&r")
         (mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
                  (match_operand:HI 2 "register_operand"                 "r")))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (mult:HI (zero_extend:HI (match_dup 1))
+                            (match_dup 2)))
+               (clobber (reg:CC REG_CC))])])
+
+(define_insn "*muluqihi3"
+  [(set (match_operand:HI 0 "register_operand"                        "=&r")
+        (mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
+                 (match_operand:HI 2 "register_operand"                 "r")))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "mul %1,%A2
 	movw %0,r0
 	mul %1,%B2
 	add %B0,r0
 	clr __zero_reg__"
-  [(set_attr "length" "5")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "5")])
 
 ;; one-extend operand 1
 
