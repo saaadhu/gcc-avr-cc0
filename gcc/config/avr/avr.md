@@ -3725,16 +3725,32 @@
    (set (match_dup 0) (reg:PSI 22))
    (set (match_dup 3) (reg:PSI 18))])
 
-(define_insn "*divmodpsi4_call"
+(define_insn_and_split "*divmodpsi4_call_split"
   [(set (reg:PSI 22) (div:PSI (reg:PSI 22) (reg:PSI 18)))
    (set (reg:PSI 18) (mod:PSI (reg:PSI 22) (reg:PSI 18)))
    (clobber (reg:QI 21))
    (clobber (reg:QI 25))
    (clobber (reg:QI 26))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:PSI 22) (div:PSI (reg:PSI 22) (reg:PSI 18)))
+              (set (reg:PSI 18) (mod:PSI (reg:PSI 22) (reg:PSI 18)))
+              (clobber (reg:QI 21))
+              (clobber (reg:QI 25))
+              (clobber (reg:QI 26))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*divmodpsi4_call"
+  [(set (reg:PSI 22) (div:PSI (reg:PSI 22) (reg:PSI 18)))
+   (set (reg:PSI 18) (mod:PSI (reg:PSI 22) (reg:PSI 18)))
+   (clobber (reg:QI 21))
+   (clobber (reg:QI 25))
+   (clobber (reg:QI 26))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __divmodpsi4"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 (define_insn_and_split "udivmodpsi4"
   [(parallel [(set (match_operand:PSI 0 "pseudo_register_operand" "")
