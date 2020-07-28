@@ -2216,19 +2216,33 @@
 
 ;; "*maddqihi4"
 ;; "*umaddqihi4"
-(define_insn "*<extend_u>maddqihi4"
+(define_insn_and_split "*<extend_u>maddqihi4_split"
   [(set (match_operand:HI 0 "register_operand"                                  "=r")
         (plus:HI (mult:HI (any_extend:HI (match_operand:QI 1 "register_operand" "<mul_r_d>"))
                           (any_extend:HI (match_operand:QI 2 "register_operand" "<mul_r_d>")))
                  (match_operand:HI 3 "register_operand"                         "0")))]
 
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:HI (mult:HI (any_extend:HI (match_dup 1))
+                                     (any_extend:HI (match_dup 2)))
+                            (match_dup 3)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<extend_u>maddqihi4"
+  [(set (match_operand:HI 0 "register_operand"                                  "=r")
+        (plus:HI (mult:HI (any_extend:HI (match_operand:QI 1 "register_operand" "<mul_r_d>"))
+                          (any_extend:HI (match_operand:QI 2 "register_operand" "<mul_r_d>")))
+                 (match_operand:HI 3 "register_operand"                         "0")))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "mul<extend_s> %1,%2
 	add %A0,r0
 	adc %B0,r1
 	clr __zero_reg__"
-  [(set_attr "length" "4")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "4")])
 
 ;; "*msubqihi4"
 ;; "*umsubqihi4"
