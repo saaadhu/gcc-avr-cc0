@@ -6067,7 +6067,7 @@
 ;; Convert them all to proper jumps.
 ;; ****************************************************************/
 
-(define_insn "difficult_branch"
+(define_insn_and_split "difficult_branch"
   [(set (pc)
         (if_then_else (match_operator 1 "difficult_comparison_operator"
                         [(reg:CC REG_CC)
@@ -6075,11 +6075,29 @@
                       (label_ref (match_operand 0 "" ""))
                       (pc)))]
   "reload_completed"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (pc)
+                   (if_then_else (match_op_dup 1
+                                   [(reg:CC REG_CC)
+                                    (const_int 0)])
+                                 (label_ref (match_dup 0))
+                                 (pc)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*difficult_branch"
+  [(set (pc)
+        (if_then_else (match_operator 1 "difficult_comparison_operator"
+                        [(reg:CC REG_CC)
+                         (const_int 0)])
+                      (label_ref (match_operand 0 "" ""))
+                      (pc)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 0);
   }
-  [(set_attr "type" "branch1")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "branch1")])
 
 ;; revers branch
 
