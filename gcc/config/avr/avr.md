@@ -2585,17 +2585,28 @@
 ;; The EXTEND of $1 only appears in combine, we don't see it in expand so that
 ;; expand decides to use ASHIFT instead of MUL because ASHIFT costs are cheaper
 ;; at that time.  Fix that.
-
-(define_insn "*ashiftqihi2.signx.1"
+(define_insn_and_split "*ashiftqihi2.signx.1_split"
   [(set (match_operand:HI 0 "register_operand"                           "=r,*r")
         (ashift:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "0,r"))
                    (const_int 1)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ashift:HI (sign_extend:HI (match_dup 1))
+                              (const_int 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*ashiftqihi2.signx.1"
+  [(set (match_operand:HI 0 "register_operand"                           "=r,*r")
+        (ashift:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "0,r"))
+                   (const_int 1)))
+   (clobber (reg:CC REG_CC)) ]
+  "reload_completed"
   "@
 	lsl %A0\;sbc %B0,%B0
 	mov %A0,%1\;lsl %A0\;sbc %B0,%B0"
-  [(set_attr "length" "2,3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "2,3")])
 
 (define_insn_and_split "*ashifthi3.signx.const"
   [(set (match_operand:HI 0 "register_operand"                           "=r")
