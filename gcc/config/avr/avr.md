@@ -3266,14 +3266,26 @@
   "%~call __usmulhisi3"
   [(set_attr "type" "xcall")])
 
-(define_insn "*mul<extend_su>hisi3_call"
+(define_insn_and_split "*mul<extend_su>hisi3_call_split"
   [(set (reg:SI 22)
         (mult:SI (any_extend:SI (reg:HI 26))
                  (reg:SI 18)))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:SI 22)
+                   (mult:SI (any_extend:SI (reg:HI 26))
+                            (reg:SI 18)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mul<extend_su>hisi3_call"
+  [(set (reg:SI 22)
+        (mult:SI (any_extend:SI (reg:HI 26))
+                 (reg:SI 18)))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "%~call __mul<extend_su>hisi3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 (define_insn "*mulohisi3_call"
   [(set (reg:SI 22)
