@@ -3385,14 +3385,26 @@
    (set (match_dup 0) (reg:QI 24))
    (set (match_dup 3) (reg:QI 25))])
 
-(define_insn "*udivmodqi4_call"
+(define_insn_and_split "*udivmodqi4_call_split"
   [(set (reg:QI 24) (udiv:QI (reg:QI 24) (reg:QI 22)))
    (set (reg:QI 25) (umod:QI (reg:QI 24) (reg:QI 22)))
    (clobber (reg:QI 23))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:QI 24) (udiv:QI (reg:QI 24) (reg:QI 22)))
+              (set (reg:QI 25) (umod:QI (reg:QI 24) (reg:QI 22)))
+              (clobber (reg:QI 23))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*udivmodqi4_call"
+  [(set (reg:QI 24) (udiv:QI (reg:QI 24) (reg:QI 22)))
+   (set (reg:QI 25) (umod:QI (reg:QI 24) (reg:QI 22)))
+   (clobber (reg:QI 23))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __udivmodqi4"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 (define_insn_and_split "divmodhi4"
   [(parallel [(set (match_operand:HI 0 "pseudo_register_operand" "")
