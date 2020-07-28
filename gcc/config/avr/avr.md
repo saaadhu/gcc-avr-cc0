@@ -3825,15 +3825,29 @@
    (set (match_dup 0) (reg:SI 18))
    (set (match_dup 3) (reg:SI 22))])
 
-(define_insn "*divmodsi4_call"
+(define_insn_and_split "*divmodsi4_call_split"
   [(set (reg:SI 18) (div:SI (reg:SI 22) (reg:SI 18)))
    (set (reg:SI 22) (mod:SI (reg:SI 22) (reg:SI 18)))
    (clobber (reg:HI 26))
    (clobber (reg:HI 30))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:SI 18) (div:SI (reg:SI 22) (reg:SI 18)))
+              (set (reg:SI 22) (mod:SI (reg:SI 22) (reg:SI 18)))
+              (clobber (reg:HI 26))
+              (clobber (reg:HI 30))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*divmodsi4_call"
+  [(set (reg:SI 18) (div:SI (reg:SI 22) (reg:SI 18)))
+   (set (reg:SI 22) (mod:SI (reg:SI 22) (reg:SI 18)))
+   (clobber (reg:HI 26))
+   (clobber (reg:HI 30))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __divmodsi4"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 (define_insn_and_split "udivmodsi4"
   [(parallel [(set (match_operand:SI 0 "pseudo_register_operand" "")
