@@ -3474,15 +3474,30 @@
    (set (match_dup 0) (reg:HI 22))
    (set (match_dup 3) (reg:HI 24))])
 
-(define_insn "*udivmodhi4_call"
+(define_insn_and_split "*udivmodhi4_call_split"
   [(set (reg:HI 22) (udiv:HI (reg:HI 24) (reg:HI 22)))
    (set (reg:HI 24) (umod:HI (reg:HI 24) (reg:HI 22)))
    (clobber (reg:HI 26))
    (clobber (reg:QI 21))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:HI 22) (udiv:HI (reg:HI 24) (reg:HI 22)))
+              (set (reg:HI 24) (umod:HI (reg:HI 24) (reg:HI 22)))
+              (clobber (reg:HI 26))
+              (clobber (reg:QI 21))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*udivmodhi4_call"
+  [(set (reg:HI 22) (udiv:HI (reg:HI 24) (reg:HI 22)))
+   (set (reg:HI 24) (umod:HI (reg:HI 24) (reg:HI 22)))
+   (clobber (reg:HI 26))
+   (clobber (reg:QI 21))
+   (clobber (reg:CC REG_CC))
+   ]
+  "reload_completed"
   "%~call __udivmodhi4"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 24-bit multiply
