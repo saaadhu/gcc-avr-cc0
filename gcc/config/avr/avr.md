@@ -3287,14 +3287,26 @@
   "%~call __mul<extend_su>hisi3"
   [(set_attr "type" "xcall")])
 
-(define_insn "*mulohisi3_call"
+(define_insn_and_split "*mulohisi3_call_split"
   [(set (reg:SI 22)
         (mult:SI (not:SI (zero_extend:SI (not:HI (reg:HI 26))))
                  (reg:SI 18)))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:SI 22)
+                   (mult:SI (not:SI (zero_extend:SI (not:HI (reg:HI 26))))
+                            (reg:SI 18)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mulohisi3_call"
+  [(set (reg:SI 22)
+        (mult:SI (not:SI (zero_extend:SI (not:HI (reg:HI 26))))
+                 (reg:SI 18)))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "%~call __mulohisi3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ; / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / %
 ; divmod
