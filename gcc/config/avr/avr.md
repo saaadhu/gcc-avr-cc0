@@ -5873,7 +5873,7 @@
 ;; or for old peepholes.
 ;; Fixme - bitwise Mask will not work for DImode
 
-(define_insn "*sbrx_and_branch<mode>"
+(define_insn_and_split "*sbrx_and_branch<mode>_split"
   [(set (pc)
         (if_then_else
          (match_operator 0 "eqne_operator"
@@ -5884,6 +5884,31 @@
          (label_ref (match_operand 3 "" ""))
          (pc)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (pc)
+                   (if_then_else
+                   (match_op_dup 0
+                                 [(and:QISI
+                                   (match_dup 1)
+                                   (match_dup 2))
+                                  (const_int 0)])
+                   (label_ref (match_dup 3))
+                   (pc)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*sbrx_and_branch<mode>"
+  [(set (pc)
+        (if_then_else
+         (match_operator 0 "eqne_operator"
+                         [(and:QISI
+                           (match_operand:QISI 1 "register_operand" "r")
+                           (match_operand:QISI 2 "single_one_operand" "n"))
+                          (const_int 0)])
+         (label_ref (match_operand 3 "" ""))
+         (pc)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     HOST_WIDE_INT bitnumber;
     bitnumber = exact_log2 (GET_MODE_MASK (<MODE>mode) & INTVAL (operands[2]));
@@ -5896,8 +5921,7 @@
                       (const_int 2)
                       (if_then_else (match_test "!AVR_HAVE_JMP_CALL")
                                     (const_int 2)
-                                    (const_int 4))))
-   (set_attr "cc" "clobber")])
+                                    (const_int 4))))])
 
 ;; Convert sign tests to bit 7/15/31 tests that match the above insns.
 (define_peephole2
