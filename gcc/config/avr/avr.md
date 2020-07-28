@@ -6011,7 +6011,7 @@
 ;;  Compare with 0 (test) jumps
 ;; ************************************************************************
 
-(define_insn "branch"
+(define_insn_and_split "branch"
   [(set (pc)
         (if_then_else (match_operator 1 "simple_comparison_operator"
                                       [(reg:CC REG_CC)
@@ -6019,11 +6019,29 @@
                       (label_ref (match_operand 0 "" ""))
                       (pc)))]
   "reload_completed"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (pc)
+                   (if_then_else (match_op_dup 1
+                                               [(reg:CC REG_CC)
+                                                (const_int 0)])
+                                 (label_ref (match_dup 0))
+                                 (pc)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*branch"
+  [(set (pc)
+        (if_then_else (match_operator 1 "simple_comparison_operator"
+                                      [(reg:CC REG_CC)
+                                       (const_int 0)])
+                      (label_ref (match_operand 0 "" ""))
+                      (pc)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 0);
   }
-  [(set_attr "type" "branch")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "branch")])
 
 
 ;; Same as above but wrap SET_SRC so that this branch won't be transformed
