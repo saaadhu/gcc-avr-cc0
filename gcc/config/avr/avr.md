@@ -4732,17 +4732,31 @@
       }
   })
 
-(define_insn "*ashlpsi3"
+(define_insn_and_split "*ashlpsi3_split"
   [(set (match_operand:PSI 0 "register_operand"             "=r,r,r,r")
         (ashift:PSI (match_operand:PSI 1 "register_operand"  "0,0,r,0")
                     (match_operand:QI 2 "nonmemory_operand"  "r,P,O,n")))
    (clobber (match_scratch:QI 3                             "=X,X,X,&d"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ashift:PSI (match_dup 1)
+                               (match_dup 2)))
+              (clobber (match_dup 3))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*ashlpsi3"
+  [(set (match_operand:PSI 0 "register_operand"             "=r,r,r,r")
+        (ashift:PSI (match_operand:PSI 1 "register_operand"  "0,0,r,0")
+                    (match_operand:QI 2 "nonmemory_operand"  "r,P,O,n")))
+   (clobber (match_scratch:QI 3                             "=X,X,X,&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_ashlpsi3 (insn, operands, NULL);
   }
-  [(set_attr "adjust_len" "ashlpsi")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "ashlpsi")])
 
 ;; >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >>
 ;; arithmetic shift right
