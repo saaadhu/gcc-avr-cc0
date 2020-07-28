@@ -3528,11 +3528,24 @@
       DONE;
   })
 
-(define_insn "*umulqihipsi3"
+(define_insn_and_split "*umulqihipsi3_split"
   [(set (match_operand:PSI 0 "register_operand"                         "=&r")
         (mult:PSI (zero_extend:PSI (match_operand:QI 1 "register_operand" "r"))
                   (zero_extend:PSI (match_operand:HI 2 "register_operand" "r"))))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (mult:PSI (zero_extend:PSI (match_dup 1))
+                             (zero_extend:PSI (match_dup 2))))
+               (clobber (reg:CC REG_CC))])])
+
+(define_insn "*umulqihipsi3"
+  [(set (match_operand:PSI 0 "register_operand"                         "=&r")
+        (mult:PSI (zero_extend:PSI (match_operand:QI 1 "register_operand" "r"))
+                  (zero_extend:PSI (match_operand:HI 2 "register_operand" "r"))))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "mul %1,%A2
 	movw %A0,r0
 	mul %1,%B2
@@ -3540,8 +3553,7 @@
 	add %B0,r0
 	adc %C0,r1
 	clr __zero_reg__"
-  [(set_attr "length" "7")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "7")])
 
 (define_insn "*umulhiqipsi3"
   [(set (match_operand:PSI 0 "register_operand"                         "=&r")
