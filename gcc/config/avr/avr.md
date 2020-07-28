@@ -4364,14 +4364,26 @@
   "lsl %A0\;rol %B0\;rol %C0\;rol %D0\;adc %A0,__zero_reg__"
   [(set_attr "length" "5")])
 
-(define_insn "*rotlsi2.31"
+(define_insn_and_split "*rotlsi2.31_split"
   [(set (match_operand:SI 0 "register_operand"           "=r")
         (rotate:SI (match_operand:SI 1 "register_operand" "0")
                    (const_int 31)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (rotate:SI (match_dup 1)
+                              (const_int 31)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*rotlsi2.31"
+  [(set (match_operand:SI 0 "register_operand"           "=r")
+        (rotate:SI (match_operand:SI 1 "register_operand" "0")
+                   (const_int 31)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "bst %A0,0\;ror %D0\;ror %C0\;ror %B0\;ror %A0\;bld %D0,7"
-  [(set_attr "length" "6")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "6")])
 
 ;; Overlapping non-HImode registers often (but not always) need a scratch.
 ;; The best we can do is use early clobber alternative "#&r" so that
