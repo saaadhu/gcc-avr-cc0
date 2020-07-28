@@ -3428,15 +3428,29 @@
    (set (match_dup 0) (reg:HI 22))
    (set (match_dup 3) (reg:HI 24))])
 
-(define_insn "*divmodhi4_call"
+(define_insn_and_split "*divmodhi4_call_split"
   [(set (reg:HI 22) (div:HI (reg:HI 24) (reg:HI 22)))
    (set (reg:HI 24) (mod:HI (reg:HI 24) (reg:HI 22)))
    (clobber (reg:HI 26))
    (clobber (reg:QI 21))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:HI 22) (div:HI (reg:HI 24) (reg:HI 22)))
+              (set (reg:HI 24) (mod:HI (reg:HI 24) (reg:HI 22)))
+              (clobber (reg:HI 26))
+              (clobber (reg:QI 21))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*divmodhi4_call"
+  [(set (reg:HI 22) (div:HI (reg:HI 24) (reg:HI 22)))
+   (set (reg:HI 24) (mod:HI (reg:HI 24) (reg:HI 22)))
+   (clobber (reg:HI 26))
+   (clobber (reg:QI 21))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __divmodhi4"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 (define_insn_and_split "udivmodhi4"
   [(parallel [(set (match_operand:HI 0 "pseudo_register_operand" "")
