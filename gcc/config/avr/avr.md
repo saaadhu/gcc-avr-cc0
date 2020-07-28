@@ -5107,14 +5107,24 @@
 ;; abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x)
 ;; abs
 
-(define_insn "absqi2"
+(define_insn_and_split "absqi2"
   [(set (match_operand:QI 0 "register_operand" "=r")
         (abs:QI (match_operand:QI 1 "register_operand" "0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (abs:QI (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*absqi2"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+        (abs:QI (match_operand:QI 1 "register_operand" "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "sbrc %0,7
 	neg %0"
-  [(set_attr "length" "2")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "2")])
 
 
 (define_insn "abssf2"
