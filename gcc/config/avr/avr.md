@@ -3871,15 +3871,29 @@
    (set (match_dup 0) (reg:SI 18))
    (set (match_dup 3) (reg:SI 22))])
 
-(define_insn "*udivmodsi4_call"
+(define_insn_and_split "*udivmodsi4_call_split"
   [(set (reg:SI 18) (udiv:SI (reg:SI 22) (reg:SI 18)))
    (set (reg:SI 22) (umod:SI (reg:SI 22) (reg:SI 18)))
    (clobber (reg:HI 26))
    (clobber (reg:HI 30))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:SI 18) (udiv:SI (reg:SI 22) (reg:SI 18)))
+              (set (reg:SI 22) (umod:SI (reg:SI 22) (reg:SI 18)))
+              (clobber (reg:HI 26))
+              (clobber (reg:HI 30))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*udivmodsi4_call"
+  [(set (reg:SI 18) (udiv:SI (reg:SI 22) (reg:SI 18)))
+   (set (reg:SI 22) (umod:SI (reg:SI 22) (reg:SI 18)))
+   (clobber (reg:HI 26))
+   (clobber (reg:HI 30))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __udivmodsi4"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ; and
