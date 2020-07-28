@@ -3645,14 +3645,26 @@
       }
   })
 
-(define_insn "*mulsqipsi3.libgcc"
+(define_insn_and_split "*mulsqipsi3.libgcc_split"
   [(set (reg:PSI 18)
         (mult:PSI (sign_extend:PSI (reg:QI 25))
                   (reg:PSI 22)))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:PSI 18)
+                   (mult:PSI (sign_extend:PSI (reg:QI 25))
+                             (reg:PSI 22)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mulsqipsi3.libgcc"
+  [(set (reg:PSI 18)
+        (mult:PSI (sign_extend:PSI (reg:QI 25))
+                  (reg:PSI 22)))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "%~call __mulsqipsi3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 (define_insn "*mulpsi3.libgcc"
   [(set (reg:PSI 22)
