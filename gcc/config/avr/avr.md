@@ -3218,16 +3218,32 @@
 
 ;; "*umulhi3_highpart_call"
 ;; "*smulhi3_highpart_call"
-(define_insn "*<extend_su>mulhi3_highpart_call"
+(define_insn_and_split "*<extend_su>mulhi3_highpart_call_split"
   [(set (reg:HI 24)
         (truncate:HI (lshiftrt:SI (mult:SI (any_extend:SI (reg:HI 18))
                                            (any_extend:SI (reg:HI 26)))
                                   (const_int 16))))
    (clobber (reg:HI 22))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:HI 24)
+                   (truncate:HI (lshiftrt:SI (mult:SI (any_extend:SI (reg:HI 18))
+                                                      (any_extend:SI (reg:HI 26)))
+                                             (const_int 16))))
+              (clobber (reg:HI 22))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<extend_su>mulhi3_highpart_call"
+  [(set (reg:HI 24)
+        (truncate:HI (lshiftrt:SI (mult:SI (any_extend:SI (reg:HI 18))
+                                           (any_extend:SI (reg:HI 26)))
+                                  (const_int 16))))
+   (clobber (reg:HI 22))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "%~call __<extend_u>mulhisi3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 (define_insn "*usmulhisi3_call"
   [(set (reg:SI 22)
