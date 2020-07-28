@@ -3195,14 +3195,26 @@
 
 ;; "*mulhisi3_call"
 ;; "*umulhisi3_call"
-(define_insn "*<extend_u>mulhisi3_call"
+(define_insn_and_split "*<extend_u>mulhisi3_call_split"
   [(set (reg:SI 22)
         (mult:SI (any_extend:SI (reg:HI 18))
                  (any_extend:SI (reg:HI 26))))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:SI 22)
+                   (mult:SI (any_extend:SI (reg:HI 18))
+                            (any_extend:SI (reg:HI 26))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<extend_u>mulhisi3_call"
+  [(set (reg:SI 22)
+        (mult:SI (any_extend:SI (reg:HI 18))
+                 (any_extend:SI (reg:HI 26))))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "%~call __<extend_u>mulhisi3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; "*umulhi3_highpart_call"
 ;; "*smulhi3_highpart_call"
