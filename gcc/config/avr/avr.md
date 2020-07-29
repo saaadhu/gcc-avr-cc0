@@ -8161,15 +8161,30 @@
 	clr __zero_reg__"
   [(set_attr "length" "3")])
 
-(define_insn "*fmulsu.call"
+(define_insn_and_split "*fmulsu.call_split"
   [(set (reg:HI 22)
         (unspec:HI [(reg:QI 24)
                     (reg:QI 25)] UNSPEC_FMULSU))
    (clobber (reg:HI 24))]
   "!AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:HI 22)
+                   (unspec:HI [(reg:QI 24)
+                               (reg:QI 25)] UNSPEC_FMULSU))
+              (clobber (reg:HI 24))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*fmulsu.call"
+  [(set (reg:HI 22)
+        (unspec:HI [(reg:QI 24)
+                    (reg:QI 25)] UNSPEC_FMULSU))
+   (clobber (reg:HI 24))
+   (clobber (reg:CC REG_CC))]
+  "!AVR_HAVE_MUL && reload_completed"
   "%~call __fmulsu"
   [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+   ])
 
 
 ;; Some combiner patterns dealing with bits.
