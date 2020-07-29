@@ -7760,14 +7760,26 @@
     operands[2] = gen_reg_rtx (HImode);
   })
 
-(define_insn "*ctzhi2.libgcc"
+(define_insn_and_split "*ctzhi2.libgcc_split"
   [(set (reg:HI 24)
         (ctz:HI (reg:HI 24)))
    (clobber (reg:QI 26))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:HI 24)
+                   (ctz:HI (reg:HI 24)))
+              (clobber (reg:QI 26))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*ctzhi2.libgcc"
+  [(set (reg:HI 24)
+        (ctz:HI (reg:HI 24)))
+   (clobber (reg:QI 26))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __ctzhi2"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 (define_insn "*ctzsihi2.libgcc"
   [(set (reg:HI 24)
