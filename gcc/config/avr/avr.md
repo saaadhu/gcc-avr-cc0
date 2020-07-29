@@ -7027,7 +7027,7 @@
    (set_attr "cc" "none")])
 
 ;;  Library prologue saves
-(define_insn "call_prologue_saves"
+(define_insn_and_split "call_prologue_saves"
   [(unspec_volatile:HI [(const_int 0)] UNSPECV_PROLOGUE_SAVES)
    (match_operand:HI 0 "immediate_operand" "i,i")
    (set (reg:HI REG_SP)
@@ -7036,12 +7036,32 @@
    (use (reg:HI REG_X))
    (clobber (reg:HI REG_Z))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(unspec_volatile:HI [(const_int 0)] UNSPECV_PROLOGUE_SAVES)
+              (match_dup 0)
+              (set (reg:HI REG_SP)
+                   (minus:HI (reg:HI REG_SP)
+                             (match_dup 1)))
+              (use (reg:HI REG_X))
+              (clobber (reg:HI REG_Z))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*call_prologue_saves"
+  [(unspec_volatile:HI [(const_int 0)] UNSPECV_PROLOGUE_SAVES)
+   (match_operand:HI 0 "immediate_operand" "i,i")
+   (set (reg:HI REG_SP)
+        (minus:HI (reg:HI REG_SP)
+                  (match_operand:HI 1 "immediate_operand" "i,i")))
+   (use (reg:HI REG_X))
+   (clobber (reg:HI REG_Z))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "ldi r30,lo8(gs(1f))
 	ldi r31,hi8(gs(1f))
 	%~jmp __prologue_saves__+((18 - %0) * 2)
 1:"
   [(set_attr "length" "5,6")
-   (set_attr "cc" "clobber")
    (set_attr "isa" "rjmp,jmp")])
 
 ;  epilogue  restores using library
