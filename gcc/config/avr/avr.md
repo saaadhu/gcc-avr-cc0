@@ -7266,7 +7266,7 @@
   [(set_attr "length" "4,5")
    (set_attr "isa" "no_tiny,tiny")])
 
-(define_insn "delay_cycles_3"
+(define_insn_and_split "delay_cycles_3"
   [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "n")
                      (const_int 3)]
                     UNSPECV_DELAY_CYCLES)
@@ -7276,6 +7276,29 @@
    (clobber (match_scratch:QI 3 "=&d"))
    (clobber (match_scratch:QI 4 "=&d"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(unspec_volatile [(match_dup 0)
+                                (const_int 3)]
+                               UNSPECV_DELAY_CYCLES)
+              (set (match_dup 1)
+               (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+              (clobber (match_dup 2))
+              (clobber (match_dup 3))
+              (clobber (match_dup 4))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*delay_cycles_3"
+  [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "n")
+                     (const_int 3)]
+                    UNSPECV_DELAY_CYCLES)
+   (set (match_operand:BLK 1 "" "")
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+   (clobber (match_scratch:QI 2 "=&d"))
+   (clobber (match_scratch:QI 3 "=&d"))
+   (clobber (match_scratch:QI 4 "=&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "ldi %2,lo8(%0)
 	ldi %3,hi8(%0)
 	ldi %4,hlo8(%0)
@@ -7283,8 +7306,7 @@
 	sbci %3,0
 	sbci %4,0
 	brne 1b"
-  [(set_attr "length" "7")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "7")])
 
 (define_insn "delay_cycles_4"
   [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "n")
