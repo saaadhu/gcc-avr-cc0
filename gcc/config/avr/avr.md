@@ -6535,7 +6535,7 @@
    (set_attr "cc" "none")])
 
 ;; Lower half of the I/O space - use sbic/sbis directly.
-(define_insn "*sbix_branch"
+(define_insn_and_split "*sbix_branch_split"
   [(set (pc)
         (if_then_else
          (match_operator 0 "eqne_operator"
@@ -6547,6 +6547,33 @@
          (label_ref (match_operand 3 "" ""))
          (pc)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (pc)
+                   (if_then_else
+                    (match_operator 0 "eqne_operator"
+                                    [(zero_extract:QIHI
+                                      (mem:QI (match_dup 1))
+                                      (const_int 1)
+                                      (match_dup 2))
+                                     (const_int 0)])
+                    (label_ref (match_dup 3))
+                    (pc)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*sbix_branch"
+  [(set (pc)
+        (if_then_else
+         (match_operator 0 "eqne_operator"
+                         [(zero_extract:QIHI
+                           (mem:QI (match_operand 1 "low_io_address_operand" "i"))
+                           (const_int 1)
+                           (match_operand 2 "const_int_operand" "n"))
+                          (const_int 0)])
+         (label_ref (match_operand 3 "" ""))
+         (pc)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_sbxx_branch (insn, operands);
   }
@@ -6556,8 +6583,7 @@
                       (const_int 2)
                       (if_then_else (match_test "!AVR_HAVE_JMP_CALL")
                                     (const_int 2)
-                                    (const_int 4))))
-   (set_attr "cc" "clobber")])
+                                    (const_int 4))))])
 
 ;; Tests of bit 7 are pessimized to sign tests, so we need this too...
 (define_insn "*sbix_branch_bit7"
