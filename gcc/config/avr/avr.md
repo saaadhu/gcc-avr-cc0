@@ -8348,18 +8348,34 @@
 
 ;; Same, but with a NOT inverting the source bit.
 ;; Insert bit ~$2.$3 into $0.$1
-(define_insn "*insv.not-shiftrt"
+(define_insn_and_split "*insv.not-shiftrt_split"
   [(set (zero_extract:QI (match_operand:QI 0 "register_operand"           "+r")
                          (const_int 1)
                          (match_operand:QI 1 "const_0_to_7_operand"        "n"))
         (not:QI (any_shiftrt:QI (match_operand:QI 2 "register_operand"     "r")
                                 (match_operand:QI 3 "const_0_to_7_operand" "n"))))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (zero_extract:QI (match_dup 0)
+                                    (const_int 1)
+                                    (match_dup 1))
+                   (not:QI (any_shiftrt:QI (match_dup 2)
+                                           (match_dup 3))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*insv.not-shiftrt"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"           "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand"        "n"))
+        (not:QI (any_shiftrt:QI (match_operand:QI 2 "register_operand"     "r")
+                                (match_operand:QI 3 "const_0_to_7_operand" "n"))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_insert_notbit (insn, operands, NULL_RTX, NULL);
   }
-  [(set_attr "adjust_len" "insv_notbit")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "insv_notbit")])
 
 ;; Insert bit ~$2.0 into $0.$1
 (define_insn "*insv.xor1-bit.0"
