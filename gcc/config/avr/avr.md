@@ -7047,7 +7047,7 @@
    (set_attr "isa" "rjmp,jmp")])
 
 ;  epilogue  restores using library
-(define_insn "epilogue_restores"
+(define_insn_and_split "epilogue_restores"
   [(unspec_volatile:QI [(const_int 0)] UNSPECV_EPILOGUE_RESTORES)
    (set (reg:HI REG_Y)
         (plus:HI (reg:HI REG_Y)
@@ -7057,10 +7057,32 @@
                  (match_dup 0)))
    (clobber (reg:QI REG_Z))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(unspec_volatile:QI [(const_int 0)] UNSPECV_EPILOGUE_RESTORES)
+              (set (reg:HI REG_Y)
+                   (plus:HI (reg:HI REG_Y)
+                            (match_dup 0)))
+              (set (reg:HI REG_SP)
+                   (plus:HI (reg:HI REG_Y)
+                            (match_dup 0)))
+              (clobber (reg:QI REG_Z))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*epilogue_restores"
+  [(unspec_volatile:QI [(const_int 0)] UNSPECV_EPILOGUE_RESTORES)
+   (set (reg:HI REG_Y)
+        (plus:HI (reg:HI REG_Y)
+                 (match_operand:HI 0 "immediate_operand" "i,i")))
+   (set (reg:HI REG_SP)
+        (plus:HI (reg:HI REG_Y)
+                 (match_dup 0)))
+   (clobber (reg:QI REG_Z))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "ldi r30, lo8(%0)
 	%~jmp __epilogue_restores__ + ((18 - %0) * 2)"
   [(set_attr "length" "2,3")
-   (set_attr "cc" "clobber")
    (set_attr "isa" "rjmp,jmp")])
 
 
