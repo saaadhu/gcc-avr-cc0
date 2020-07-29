@@ -6568,7 +6568,7 @@
                                     (const_int 4))))])
 
 ;; Tests of bit 7 are pessimized to sign tests, so we need this too...
-(define_insn "*sbix_branch_bit7"
+(define_insn_and_split "*sbix_branch_bit7_split"
   [(set (pc)
         (if_then_else
          (match_operator 0 "gelt_operator"
@@ -6577,6 +6577,27 @@
          (label_ref (match_operand 2 "" ""))
          (pc)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (pc)
+                   (if_then_else
+                    (match_operator 0 "gelt_operator"
+                                    [(mem:QI (match_dup 1))
+                                     (const_int 0)])
+                    (label_ref (match_dup 2))
+                    (pc)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*sbix_branch_bit7"
+  [(set (pc)
+        (if_then_else
+         (match_operator 0 "gelt_operator"
+                         [(mem:QI (match_operand 1 "low_io_address_operand" "i"))
+                          (const_int 0)])
+         (label_ref (match_operand 2 "" ""))
+         (pc)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     operands[3] = operands[2];
     operands[2] = GEN_INT (7);
@@ -6588,8 +6609,7 @@
                       (const_int 2)
                       (if_then_else (match_test "!AVR_HAVE_JMP_CALL")
                                     (const_int 2)
-                                    (const_int 4))))
-   (set_attr "cc" "clobber")])
+                                    (const_int 4))))])
 
 ;; Upper half of the I/O space - read port to __tmp_reg__ and use sbrc/sbrs.
 (define_insn "*sbix_branch_tmp"
