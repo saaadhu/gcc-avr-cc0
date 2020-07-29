@@ -8360,18 +8360,34 @@
   [(set_attr "adjust_len" "insv_notbit")])
 
 ;; Insert bit ~$2.0 into $0.$1
-(define_insn "*insv.xor1-bit.0"
+(define_insn_and_split "*insv.xor1-bit.0_split"
   [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
                          (const_int 1)
                          (match_operand:QI 1 "const_0_to_7_operand" "n"))
         (xor:QI (match_operand:QI 2 "register_operand"              "r")
                 (const_int 1)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (zero_extract:QI (match_dup 0)
+                                    (const_int 1)
+                                    (match_dup 1))
+                   (xor:QI (match_dup 2)
+                           (const_int 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*insv.xor1-bit.0"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n"))
+        (xor:QI (match_operand:QI 2 "register_operand"              "r")
+                (const_int 1)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_insert_notbit (insn, operands, const0_rtx, NULL);
   }
-  [(set_attr "adjust_len" "insv_notbit_0")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "insv_notbit_0")])
 
 ;; Insert bit ~$2.0 into $0.$1
 (define_insn "*insv.not-bit.0"
