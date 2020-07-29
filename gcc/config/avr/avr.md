@@ -7376,18 +7376,34 @@
 
 ;; __builtin_avr_insert_bits
 
-(define_insn "insert_bits"
+(define_insn_and_split "insert_bits"
   [(set (match_operand:QI 0 "register_operand"              "=r  ,d  ,r")
         (unspec:QI [(match_operand:SI 1 "const_int_operand"  "C0f,Cxf,C0f")
                     (match_operand:QI 2 "register_operand"   "r  ,r  ,r")
                     (match_operand:QI 3 "nonmemory_operand"  "n  ,0  ,0")]
                    UNSPEC_INSERT_BITS))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (unspec:QI [(match_dup 1)
+                               (match_dup 2)
+                               (match_dup 3)]
+                              UNSPEC_INSERT_BITS))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*insert_bits"
+  [(set (match_operand:QI 0 "register_operand"              "=r  ,d  ,r")
+        (unspec:QI [(match_operand:SI 1 "const_int_operand"  "C0f,Cxf,C0f")
+                    (match_operand:QI 2 "register_operand"   "r  ,r  ,r")
+                    (match_operand:QI 3 "nonmemory_operand"  "n  ,0  ,0")]
+                   UNSPEC_INSERT_BITS))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_insert_bits (operands, NULL);
   }
-  [(set_attr "adjust_len" "insert_bits")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "insert_bits")])
 
 
 ;; __builtin_avr_flash_segment
