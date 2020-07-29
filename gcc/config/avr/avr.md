@@ -7537,13 +7537,23 @@
   "%~call __parityhi2"
   [(set_attr "type" "xcall")])
 
-(define_insn "*parityqihi2.libgcc"
+(define_insn_and_split "*parityqihi2.libgcc_split"
   [(set (reg:HI 24)
         (zero_extend:HI (parity:QI (reg:QI 24))))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:HI 24)
+                   (zero_extend:HI (parity:QI (reg:QI 24))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*parityqihi2.libgcc"
+  [(set (reg:HI 24)
+        (zero_extend:HI (parity:QI (reg:QI 24))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __parityqi2"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 (define_insn "*paritysihi2.libgcc"
   [(set (reg:HI 24)
