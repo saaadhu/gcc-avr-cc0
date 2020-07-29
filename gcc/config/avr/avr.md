@@ -6342,7 +6342,7 @@
    (set_attr "isa" "rjmp,rjmp,jmp")
    (set_attr "cc" "none,none,clobber")])
 
-(define_insn "*tablejump.3byte-pc"
+(define_insn_and_split "*tablejump.3byte-pc_split"
   [(set (pc)
         (unspec:HI [(reg:HI REG_Z)]
                    UNSPEC_INDEX_JMP))
@@ -6350,10 +6350,28 @@
    (clobber (reg:HI REG_Z))
    (clobber (reg:QI 24))]
   "AVR_HAVE_EIJMP_EICALL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (pc)
+                   (unspec:HI [(reg:HI REG_Z)]
+                              UNSPEC_INDEX_JMP))
+              (use (label_ref (match_dup 0)))
+              (clobber (reg:HI REG_Z))
+              (clobber (reg:QI 24))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*tablejump.3byte-pc"
+  [(set (pc)
+        (unspec:HI [(reg:HI REG_Z)]
+                   UNSPEC_INDEX_JMP))
+   (use (label_ref (match_operand 0 "" "")))
+   (clobber (reg:HI REG_Z))
+   (clobber (reg:QI 24))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_EIJMP_EICALL && reload_completed"
   "clr r24\;subi r30,pm_lo8(-(%0))\;sbci r31,pm_hi8(-(%0))\;sbci r24,pm_hh8(-(%0))\;jmp __tablejump2__"
   [(set_attr "length" "6")
-   (set_attr "isa" "eijmp")
-   (set_attr "cc" "clobber")])
+   (set_attr "isa" "eijmp")])
 
 
 ;; FIXME: casesi comes up with an SImode switch value $0 which
