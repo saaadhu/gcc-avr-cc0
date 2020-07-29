@@ -7555,13 +7555,23 @@
   "%~call __parityqi2"
   [(set_attr "type" "xcall")])
 
-(define_insn "*paritysihi2.libgcc"
+(define_insn_and_split "*paritysihi2.libgcc_split"
   [(set (reg:HI 24)
         (truncate:HI (parity:SI (reg:SI 22))))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:HI 24)
+                   (truncate:HI (parity:SI (reg:SI 22))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*paritysihi2.libgcc"
+  [(set (reg:HI 24)
+        (truncate:HI (parity:SI (reg:SI 22))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __paritysi2"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 
 ;; Popcount
