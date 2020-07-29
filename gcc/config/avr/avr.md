@@ -7881,13 +7881,23 @@
    (set (match_operand:SI 0 "register_operand" "")
         (reg:SI 22))])
 
-(define_insn "*bswapsi2.libgcc"
+(define_insn_and_split "*bswapsi2.libgcc_split"
   [(set (reg:SI 22)
         (bswap:SI (reg:SI 22)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:SI 22)
+                   (bswap:SI (reg:SI 22)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*bswapsi2.libgcc"
+  [(set (reg:SI 22)
+        (bswap:SI (reg:SI 22)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __bswapsi2"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 
 ;; CPU instructions
