@@ -7219,7 +7219,7 @@
 ;; Some instructions resp. instruction sequences available
 ;; via builtins.
 
-(define_insn "delay_cycles_1"
+(define_insn_and_split "delay_cycles_1"
   [(unspec_volatile [(match_operand:QI 0 "const_int_operand" "n")
                      (const_int 1)]
                     UNSPECV_DELAY_CYCLES)
@@ -7227,11 +7227,29 @@
 	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:QI 2 "=&d"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(unspec_volatile [(match_dup 0)
+                                (const_int 1)]
+                               UNSPECV_DELAY_CYCLES)
+              (set (match_dup 1)
+               (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+              (clobber (match_dup 2))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*delay_cycles_1"
+  [(unspec_volatile [(match_operand:QI 0 "const_int_operand" "n")
+                     (const_int 1)]
+                    UNSPECV_DELAY_CYCLES)
+   (set (match_operand:BLK 1 "" "")
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+   (clobber (match_scratch:QI 2 "=&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "ldi %2,lo8(%0)
 1:	dec %2
 	brne 1b"
-  [(set_attr "length" "3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "3")])
 
 (define_insn "delay_cycles_2"
   [(unspec_volatile [(match_operand:HI 0 "const_int_operand" "n,n")
