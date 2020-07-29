@@ -8063,17 +8063,31 @@
     avr_fix_inputs (operands, 1 << 2, regmask (QImode, 24));
   })
 
-(define_insn "fmuls_insn"
+(define_insn_and_split "fmuls_insn"
   [(set (match_operand:HI 0 "register_operand" "=r")
         (unspec:HI [(match_operand:QI 1 "register_operand" "a")
                     (match_operand:QI 2 "register_operand" "a")]
                    UNSPEC_FMULS))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (unspec:HI [(match_dup 1)
+                               (match_dup 2)]
+                              UNSPEC_FMULS))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*fmuls_insn"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+        (unspec:HI [(match_operand:QI 1 "register_operand" "a")
+                    (match_operand:QI 2 "register_operand" "a")]
+                   UNSPEC_FMULS))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "fmuls %1,%2
 	movw %0,r0
 	clr __zero_reg__"
-  [(set_attr "length" "3")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "3")])
 
 (define_insn "*fmuls.call"
   [(set (reg:HI 22)
