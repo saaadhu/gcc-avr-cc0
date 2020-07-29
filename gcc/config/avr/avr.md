@@ -7582,13 +7582,23 @@
     operands[2] = gen_reg_rtx (HImode);
   })
 
-(define_insn "*popcounthi2.libgcc"
+(define_insn_and_split "*popcounthi2.libgcc_split"
   [(set (reg:HI 24)
         (popcount:HI (reg:HI 24)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:HI 24)
+                   (popcount:HI (reg:HI 24)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*popcounthi2.libgcc"
+  [(set (reg:HI 24)
+        (popcount:HI (reg:HI 24)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __popcounthi2"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 (define_insn "*popcountsi2.libgcc"
   [(set (reg:HI 24)
