@@ -7694,14 +7694,26 @@
   "%~call __clzhi2"
   [(set_attr "type" "xcall")])
 
-(define_insn "*clzsihi2.libgcc"
+(define_insn_and_split "*clzsihi2.libgcc_split"
   [(set (reg:HI 24)
         (truncate:HI (clz:SI (reg:SI 22))))
    (clobber (reg:QI 26))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:HI 24)
+                   (truncate:HI (clz:SI (reg:SI 22))))
+              (clobber (reg:QI 26))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*clzsihi2.libgcc"
+  [(set (reg:HI 24)
+        (truncate:HI (clz:SI (reg:SI 22))))
+   (clobber (reg:QI 26))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __clzsi2"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; Count Trailing Zeros
 
