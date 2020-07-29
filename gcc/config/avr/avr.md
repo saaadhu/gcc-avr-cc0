@@ -7251,7 +7251,7 @@
 	brne 1b"
   [(set_attr "length" "3")])
 
-(define_insn "delay_cycles_2"
+(define_insn_and_split "delay_cycles_2"
   [(unspec_volatile [(match_operand:HI 0 "const_int_operand" "n,n")
                      (const_int 2)]
                     UNSPECV_DELAY_CYCLES)
@@ -7259,12 +7259,30 @@
 	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
    (clobber (match_scratch:HI 2 "=&w,&d"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(unspec_volatile [(match_dup 0)
+                                (const_int 2)]
+                               UNSPECV_DELAY_CYCLES)
+              (set (match_dup 1)
+               (unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+              (clobber (match_dup 2))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*delay_cycles_2"
+  [(unspec_volatile [(match_operand:HI 0 "const_int_operand" "n,n")
+                     (const_int 2)]
+                    UNSPECV_DELAY_CYCLES)
+   (set (match_operand:BLK 1 "" "")
+	(unspec_volatile:BLK [(match_dup 1)] UNSPECV_MEMORY_BARRIER))
+   (clobber (match_scratch:HI 2 "=&w,&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	ldi %A2,lo8(%0)\;ldi %B2,hi8(%0)\n1:	sbiw %A2,1\;brne 1b
 	ldi %A2,lo8(%0)\;ldi %B2,hi8(%0)\n1:	subi %A2,1\;sbci %B2,0\;brne 1b"
   [(set_attr "length" "4,5")
-   (set_attr "isa" "no_tiny,tiny")
-   (set_attr "cc" "clobber")])
+   (set_attr "isa" "no_tiny,tiny")])
 
 (define_insn "delay_cycles_3"
   [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "n")
