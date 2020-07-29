@@ -7636,13 +7636,23 @@
   "%~call __popcountsi2"
   [(set_attr "type" "xcall")])
 
-(define_insn "*popcountqi2.libgcc"
+(define_insn_and_split "*popcountqi2.libgcc_split"
   [(set (reg:QI 24)
         (popcount:QI (reg:QI 24)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:QI 24)
+                   (popcount:QI (reg:QI 24)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*popcountqi2.libgcc"
+  [(set (reg:QI 24)
+        (popcount:QI (reg:QI 24)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __popcountqi2"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 (define_insn_and_split "*popcountqihi2.libgcc"
   [(set (reg:HI 24)
