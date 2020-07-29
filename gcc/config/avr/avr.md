@@ -8035,15 +8035,29 @@
 	clr __zero_reg__"
   [(set_attr "length" "3")])
 
-(define_insn "*fmul.call"
+(define_insn_and_split "*fmul.call_split"
   [(set (reg:HI 22)
         (unspec:HI [(reg:QI 24)
                     (reg:QI 25)] UNSPEC_FMUL))
    (clobber (reg:HI 24))]
   "!AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:HI 22)
+                   (unspec:HI [(reg:QI 24)
+                               (reg:QI 25)] UNSPEC_FMUL))
+              (clobber (reg:HI 24))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*fmul.call"
+  [(set (reg:HI 22)
+        (unspec:HI [(reg:QI 24)
+                    (reg:QI 25)] UNSPEC_FMUL))
+   (clobber (reg:HI 24))
+   (clobber (reg:CC REG_CC))]
+  "!AVR_HAVE_MUL && reload_completed"
   "%~call __fmul"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; FMULS
 (define_expand "fmuls"
