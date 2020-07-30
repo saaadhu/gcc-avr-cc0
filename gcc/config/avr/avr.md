@@ -1908,11 +1908,24 @@
 
 ;; "subqi3"
 ;; "subqq3" "subuqq3"
-(define_insn "sub<mode>3"
+(define_insn_and_split "sub<mode>3"
   [(set (match_operand:ALL1 0 "register_operand"                    "=??r,d    ,r  ,r  ,r  ,r")
         (minus:ALL1 (match_operand:ALL1 1 "register_operand"           "0,0    ,0  ,0  ,0  ,0")
                     (match_operand:ALL1 2 "nonmemory_or_const_operand" "r,n Ynn,Y01,Ym1,Y02,Ym2")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (minus:ALL1 (match_dup 1)
+                               (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*sub<mode>3"
+  [(set (match_operand:ALL1 0 "register_operand"                    "=??r,d    ,r  ,r  ,r  ,r")
+        (minus:ALL1 (match_operand:ALL1 1 "register_operand"           "0,0    ,0  ,0  ,0  ,0")
+                    (match_operand:ALL1 2 "nonmemory_or_const_operand" "r,n Ynn,Y01,Ym1,Y02,Ym2")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	sub %0,%2
 	subi %0,lo8(%2)
@@ -1920,8 +1933,7 @@
 	inc %0
 	dec %0\;dec %0
 	inc %0\;inc %0"
-  [(set_attr "length" "1,1,1,1,2,2")
-   (set_attr "cc" "set_czn,set_czn,set_vzn,set_vzn,set_vzn,set_vzn")])
+  [(set_attr "length" "1,1,1,1,2,2")])
 
 ;; "subhi3"
 ;; "subhq3" "subuhq3"
