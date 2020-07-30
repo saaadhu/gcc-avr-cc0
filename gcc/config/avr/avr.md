@@ -1416,16 +1416,28 @@
   })
 
 
-(define_insn "*addhi3_zero_extend"
+(define_insn_and_split "*addhi3_zero_extend_split"
   [(set (match_operand:HI 0 "register_operand"                         "=r,*?r")
         (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r  ,0"))
                  (match_operand:HI 2 "register_operand"                 "0  ,r")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:HI (zero_extend:HI (match_dup 1))
+                            (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*addhi3_zero_extend"
+  [(set (match_operand:HI 0 "register_operand"                         "=r,*?r")
+        (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r  ,0"))
+                 (match_operand:HI 2 "register_operand"                 "0  ,r")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	add %A0,%1\;adc %B0,__zero_reg__
 	add %A0,%A2\;mov %B0,%B2\;adc %B0,__zero_reg__"
-  [(set_attr "length" "2,3")
-   (set_attr "cc" "set_n")])
+  [(set_attr "length" "2,3")])
 
 (define_insn "*addhi3_zero_extend1"
   [(set (match_operand:HI 0 "register_operand"                         "=r")
