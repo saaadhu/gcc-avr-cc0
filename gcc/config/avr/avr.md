@@ -1439,14 +1439,26 @@
 	add %A0,%A2\;mov %B0,%B2\;adc %B0,__zero_reg__"
   [(set_attr "length" "2,3")])
 
-(define_insn "*addhi3_zero_extend1"
+(define_insn_and_split "*addhi3_zero_extend1_split"
   [(set (match_operand:HI 0 "register_operand"                         "=r")
         (plus:HI (match_operand:HI 1 "register_operand"                 "0")
                  (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:HI (match_dup 1)
+                            (zero_extend:HI (match_dup 2))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*addhi3_zero_extend1"
+  [(set (match_operand:HI 0 "register_operand"                         "=r")
+        (plus:HI (match_operand:HI 1 "register_operand"                 "0")
+                 (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "add %A0,%2\;adc %B0,__zero_reg__"
-  [(set_attr "length" "2")
-   (set_attr "cc" "set_n")])
+  [(set_attr "length" "2")])
 
 (define_insn_and_split "*addhi3.sign_extend1_split"
   [(set (match_operand:HI 0 "register_operand"                         "=r")
