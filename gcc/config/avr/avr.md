@@ -1687,14 +1687,26 @@
   [(set_attr "length" "4")
    (set_attr "adjust_len" "plus")])
 
-(define_insn "*addpsi3_zero_extend.qi"
+(define_insn_and_split "*addpsi3_zero_extend.qi_split"
   [(set (match_operand:PSI 0 "register_operand"                          "=r")
         (plus:PSI (zero_extend:PSI (match_operand:QI 1 "register_operand" "r"))
                   (match_operand:PSI 2 "register_operand"                 "0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:PSI (zero_extend:PSI (match_dup 1))
+                             (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*addpsi3_zero_extend.qi"
+  [(set (match_operand:PSI 0 "register_operand"                          "=r")
+        (plus:PSI (zero_extend:PSI (match_operand:QI 1 "register_operand" "r"))
+                  (match_operand:PSI 2 "register_operand"                 "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "add %A0,%A1\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__"
-  [(set_attr "length" "3")
-   (set_attr "cc" "set_n")])
+  [(set_attr "length" "3")])
 
 (define_insn "*addpsi3_zero_extend.hi"
   [(set (match_operand:PSI 0 "register_operand"                          "=r")
