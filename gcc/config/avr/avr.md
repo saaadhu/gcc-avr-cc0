@@ -1792,27 +1792,53 @@
   "add %A0,%1\;adc %B0,%B1\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__"
   [(set_attr "length" "4")])
 
-(define_insn "addpsi3"
+(define_insn_and_split "addpsi3"
   [(set (match_operand:PSI 0 "register_operand"         "=??r,d ,d,r")
         (plus:PSI (match_operand:PSI 1 "register_operand" "%0,0 ,0,0")
                   (match_operand:PSI 2 "nonmemory_operand" "r,s ,n,n")))
    (clobber (match_scratch:QI 3                           "=X,X ,X,&d"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:PSI (match_dup 1)
+                             (match_dup 2)))
+              (clobber (match_dup 3 ))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*addpsi3"
+  [(set (match_operand:PSI 0 "register_operand"         "=??r,d ,d,r")
+        (plus:PSI (match_operand:PSI 1 "register_operand" "%0,0 ,0,0")
+                  (match_operand:PSI 2 "nonmemory_operand" "r,s ,n,n")))
+   (clobber (match_scratch:QI 3                           "=X,X ,X,&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_plus (insn, operands);
   }
   [(set_attr "length" "3")
-   (set_attr "adjust_len" "plus")
-   (set_attr "cc" "plus")])
+   (set_attr "adjust_len" "plus")])
 
-(define_insn "subpsi3"
+(define_insn_and_split "subpsi3"
   [(set (match_operand:PSI 0 "register_operand"           "=r")
         (minus:PSI (match_operand:PSI 1 "register_operand" "0")
                    (match_operand:PSI 2 "register_operand" "r")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (minus:PSI (match_dup 1)
+                              (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*subpsi3"
+  [(set (match_operand:PSI 0 "register_operand"           "=r")
+        (minus:PSI (match_operand:PSI 1 "register_operand" "0")
+                   (match_operand:PSI 2 "register_operand" "r")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "sub %0,%2\;sbc %B0,%B2\;sbc %C0,%C2"
-  [(set_attr "length" "3")
-   (set_attr "cc" "set_czn")])
+  [(set_attr "length" "3")])
 
 (define_insn "*subpsi3_zero_extend.qi"
   [(set (match_operand:PSI 0 "register_operand"                           "=r")
