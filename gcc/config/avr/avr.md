@@ -1031,17 +1031,29 @@
 ;; fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ;; move floating point numbers (32 bit)
 
-(define_insn "*movsf"
+(define_insn_and_split "*movsf_split"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,r ,Qm,!d,r")
         (match_operand:SF 1 "nox_general_operand"   "r,G,Qm,rG,F ,F"))]
   "register_operand (operands[0], SFmode)
    || reg_or_0_operand (operands[1], SFmode)"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (match_dup 1))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*movsf"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,r ,Qm,!d,r")
+        (match_operand:SF 1 "nox_general_operand"   "r,G,Qm,rG,F ,F"))
+   (clobber (reg:CC REG_CC))]
+  "(register_operand (operands[0], SFmode)
+    || reg_or_0_operand (operands[1], SFmode))
+   && reload_completed"
   {
     return output_movsisf (insn, operands, NULL);
   }
   [(set_attr "length" "4,4,8,9,4,10")
-   (set_attr "adjust_len" "mov32")
-   (set_attr "cc" "none,none,clobber,clobber,none,clobber")])
+   (set_attr "adjust_len" "mov32")])
 
 (define_peephole2 ; *reload_insf
   [(match_scratch:QI 2 "d")
