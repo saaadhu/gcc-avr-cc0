@@ -4282,12 +4282,27 @@
 	* return avr_out_bitop (insn, operands, NULL);"
   [(set_attr "length" "1,1,2")])
 
-(define_insn "andhi3"
+(define_insn_and_split "andhi3"
   [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
         (and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0  ,0")
                 (match_operand:HI 2 "nonmemory_operand" "r,s,n,Ca2,n")))
    (clobber (match_scratch:QI 3                        "=X,X,X,X  ,&d"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (and:HI (match_dup 1)
+                           (match_dup 2)))
+              (clobber (match_dup 3))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*andhi3"
+  [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
+        (and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0  ,0")
+                (match_operand:HI 2 "nonmemory_operand" "r,s,n,Ca2,n")))
+   (clobber (match_scratch:QI 3                        "=X,X,X,X  ,&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     if (which_alternative == 0)
       return "and %A0,%A2\;and %B0,%B2";
@@ -4297,15 +4312,29 @@
     return avr_out_bitop (insn, operands, NULL);
   }
   [(set_attr "length" "2,2,2,4,4")
-   (set_attr "adjust_len" "*,*,out_bitop,out_bitop,out_bitop")
-   (set_attr "cc" "set_n,set_n,clobber,clobber,clobber")])
+   (set_attr "adjust_len" "*,*,out_bitop,out_bitop,out_bitop")])
 
-(define_insn "andpsi3"
+(define_insn_and_split "andpsi3"
   [(set (match_operand:PSI 0 "register_operand"        "=??r,d,r  ,r")
         (and:PSI (match_operand:PSI 1 "register_operand" "%0,0,0  ,0")
                  (match_operand:PSI 2 "nonmemory_operand" "r,n,Ca3,n")))
    (clobber (match_scratch:QI 3                          "=X,X,X  ,&d"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (and:PSI (match_dup 1)
+                            (match_dup 2)))
+              (clobber (match_dup 3))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*andpsi3"
+  [(set (match_operand:PSI 0 "register_operand"        "=??r,d,r  ,r")
+        (and:PSI (match_operand:PSI 1 "register_operand" "%0,0,0  ,0")
+                 (match_operand:PSI 2 "nonmemory_operand" "r,n,Ca3,n")))
+   (clobber (match_scratch:QI 3                          "=X,X,X  ,&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     if (which_alternative == 0)
       return "and %A0,%A2" CR_TAB
@@ -4315,8 +4344,7 @@
     return avr_out_bitop (insn, operands, NULL);
   }
   [(set_attr "length" "3,3,6,6")
-   (set_attr "adjust_len" "*,out_bitop,out_bitop,out_bitop")
-   (set_attr "cc" "set_n,clobber,clobber,clobber")])
+   (set_attr "adjust_len" "*,out_bitop,out_bitop,out_bitop")])
 
 (define_insn "andsi3"
   [(set (match_operand:SI 0 "register_operand"       "=??r,d,r  ,r")
