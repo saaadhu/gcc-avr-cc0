@@ -944,18 +944,31 @@
   [(set_attr "length" "6")
    (set_attr "adjust_len" "reload_in24")])
 
-(define_insn "*movpsi"
+(define_insn_and_split "*movpsi_split"
   [(set (match_operand:PSI 0 "nonimmediate_operand" "=r,r,r ,Qm,!d,r")
         (match_operand:PSI 1 "nox_general_operand"   "r,L,Qm,rL,i ,i"))]
   "register_operand (operands[0], PSImode)
    || register_operand (operands[1], PSImode)
    || const0_rtx == operands[1]"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (match_dup 1))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*movpsi"
+  [(set (match_operand:PSI 0 "nonimmediate_operand" "=r,r,r ,Qm,!d,r")
+        (match_operand:PSI 1 "nox_general_operand"   "r,L,Qm,rL,i ,i"))
+   (clobber (reg:CC REG_CC))]
+  "(register_operand (operands[0], PSImode)
+    || register_operand (operands[1], PSImode)
+    || const0_rtx == operands[1])
+   && reload_completed"
   {
     return avr_out_movpsi (insn, operands, NULL);
   }
   [(set_attr "length" "3,3,8,9,4,10")
-   (set_attr "adjust_len" "mov24")
-   (set_attr "cc" "none,none,clobber,clobber,none,clobber")])
+   (set_attr "adjust_len" "mov24")])
 
 ;;==========================================================================
 ;; move double word (32 bit)
