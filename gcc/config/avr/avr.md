@@ -1629,18 +1629,32 @@
 ;; "addhi3_clobber"
 ;; "addhq3_clobber" "adduhq3_clobber"
 ;; "addha3_clobber" "adduha3_clobber"
-(define_insn "add<mode>3_clobber"
+(define_insn_and_split "add<mode>3_clobber"
   [(set (match_operand:ALL2 0 "register_operand"            "=!w    ,d    ,r")
         (plus:ALL2 (match_operand:ALL2 1 "register_operand"  "%0    ,0    ,0")
                    (match_operand:ALL2 2 "const_operand"     "IJ YIJ,n Ynn,n Ynn")))
    (clobber (match_scratch:QI 3                             "=X     ,X    ,&d"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:ALL2 (match_dup 1)
+                              (match_dup 2)))
+              (clobber (match_dup 3))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*add<mode>3_clobber"
+  [(set (match_operand:ALL2 0 "register_operand"            "=!w    ,d    ,r")
+        (plus:ALL2 (match_operand:ALL2 1 "register_operand"  "%0    ,0    ,0")
+                   (match_operand:ALL2 2 "const_operand"     "IJ YIJ,n Ynn,n Ynn")))
+   (clobber (match_scratch:QI 3                             "=X     ,X    ,&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_plus (insn, operands);
   }
   [(set_attr "length" "4")
-   (set_attr "adjust_len" "plus")
-   (set_attr "cc" "plus")])
+   (set_attr "adjust_len" "plus")])
 
 
 ;; "addsi3"
