@@ -2014,17 +2014,31 @@
 ;; "subsi3"
 ;; "subsq3" "subusq3"
 ;; "subsa3" "subusa3"
-(define_insn "sub<mode>3"
+(define_insn_and_split "*sub<mode>3_split"
   [(set (match_operand:ALL4 0 "register_operand"                    "=??r,d    ,r")
         (minus:ALL4 (match_operand:ALL4 1 "register_operand"           "0,0    ,0")
                     (match_operand:ALL4 2 "nonmemory_or_const_operand" "r,n Ynn,Ynn")))
    (clobber (match_scratch:QI 3                                       "=X,X    ,&d"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (minus:ALL4 (match_dup 1)
+                               (match_dup 2)))
+              (clobber (match_dup 3))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*sub<mode>3"
+  [(set (match_operand:ALL4 0 "register_operand"                    "=??r,d    ,r")
+        (minus:ALL4 (match_operand:ALL4 1 "register_operand"           "0,0    ,0")
+                    (match_operand:ALL4 2 "nonmemory_or_const_operand" "r,n Ynn,Ynn")))
+   (clobber (match_scratch:QI 3                                       "=X,X    ,&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_plus (insn, operands);
   }
-  [(set_attr "adjust_len" "plus")
-   (set_attr "cc" "plus")])
+  [(set_attr "adjust_len" "plus")])
 
 (define_insn "*subsi3_zero_extend"
   [(set (match_operand:SI 0 "register_operand"                          "=r")
