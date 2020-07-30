@@ -1882,14 +1882,26 @@
   "sub %A0,%2\;sbc %B0,%B2\;sbc %C0,__zero_reg__"
   [(set_attr "length" "3")])
 
-(define_insn "*subpsi3_sign_extend.hi"
+(define_insn_and_split "*subpsi3_sign_extend.hi_split"
   [(set (match_operand:PSI 0 "register_operand"                           "=r")
         (minus:PSI (match_operand:PSI 1 "register_operand"                 "0")
                    (sign_extend:PSI (match_operand:HI 2 "register_operand" "r"))))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (minus:PSI (match_dup 1)
+                              (sign_extend:PSI (match_dup 2))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*subpsi3_sign_extend.hi"
+  [(set (match_operand:PSI 0 "register_operand"                           "=r")
+        (minus:PSI (match_operand:PSI 1 "register_operand"                 "0")
+                   (sign_extend:PSI (match_operand:HI 2 "register_operand" "r"))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "sub %A0,%A2\;sbc %B0,%B2\;sbc %C0,__zero_reg__\;sbrc %B2,7\;inc %C0"
-  [(set_attr "length" "5")
-   (set_attr "cc" "set_czn")])
+  [(set_attr "length" "5")])
 
 ;-----------------------------------------------------------------------------
 ; sub bytes
