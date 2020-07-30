@@ -4395,17 +4395,29 @@
 ;;|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ;; ior
 
-(define_insn "iorqi3"
+(define_insn_and_split "iorqi3"
   [(set (match_operand:QI 0 "register_operand"       "=??r,d,*l")
         (ior:QI (match_operand:QI 1 "register_operand" "%0,0,0")
                 (match_operand:QI 2 "nonmemory_operand" "r,i,Co1")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ior:QI (match_dup 1)
+                           (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*iorqi3"
+  [(set (match_operand:QI 0 "register_operand"       "=??r,d,*l")
+        (ior:QI (match_operand:QI 1 "register_operand" "%0,0,0")
+                (match_operand:QI 2 "nonmemory_operand" "r,i,Co1")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	or %0,%2
 	ori %0,lo8(%2)
         * return avr_out_bitop (insn, operands, NULL);"
-  [(set_attr "length" "1,1,2")
-   (set_attr "cc" "set_zn,set_zn,none")])
+  [(set_attr "length" "1,1,2")])
 
 (define_insn "iorhi3"
   [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
