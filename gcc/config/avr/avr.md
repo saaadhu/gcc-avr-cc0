@@ -4258,17 +4258,29 @@
 ;&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ; and
 
-(define_insn "andqi3"
+(define_insn_and_split "andqi3"
   [(set (match_operand:QI 0 "register_operand"       "=??r,d,*l")
         (and:QI (match_operand:QI 1 "register_operand" "%0,0,0")
                 (match_operand:QI 2 "nonmemory_operand" "r,i,Ca1")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (and:QI (match_dup 1)
+                           (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*andqi3"
+  [(set (match_operand:QI 0 "register_operand"       "=??r,d,*l")
+        (and:QI (match_operand:QI 1 "register_operand" "%0,0,0")
+                (match_operand:QI 2 "nonmemory_operand" "r,i,Ca1")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	and %0,%2
 	andi %0,lo8(%2)
 	* return avr_out_bitop (insn, operands, NULL);"
-  [(set_attr "length" "1,1,2")
-   (set_attr "cc" "set_zn,set_zn,none")])
+  [(set_attr "length" "1,1,2")])
 
 (define_insn "andhi3"
   [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
