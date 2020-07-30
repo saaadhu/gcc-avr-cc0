@@ -1964,14 +1964,26 @@
   }
   [(set_attr "adjust_len" "plus")])
 
-(define_insn "*subhi3_zero_extend1"
+(define_insn_and_split "*subhi3_zero_extend1_split"
   [(set (match_operand:HI 0 "register_operand"                          "=r")
         (minus:HI (match_operand:HI 1 "register_operand"                 "0")
                   (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (minus:HI (match_dup 1)
+                             (zero_extend:HI (match_dup 2))))
+             (clobber (reg:CC REG_CC))])])
+
+(define_insn "*subhi3_zero_extend1"
+  [(set (match_operand:HI 0 "register_operand"                          "=r")
+        (minus:HI (match_operand:HI 1 "register_operand"                 "0")
+                  (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))
+  (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "sub %A0,%2\;sbc %B0,__zero_reg__"
-  [(set_attr "length" "2")
-   (set_attr "cc" "set_czn")])
+  [(set_attr "length" "2")])
 
 (define_insn_and_split "*subhi3.sign_extend2_split"
   [(set (match_operand:HI 0 "register_operand"                          "=r")
