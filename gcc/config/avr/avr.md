@@ -828,17 +828,29 @@
 ;; "*movhi"
 ;; "*movhq" "*movuhq"
 ;; "*movha" "*movuha"
-(define_insn "*mov<mode>"
+(define_insn_and_split "*mov<mode>_split"
   [(set (match_operand:ALL2 0 "nonimmediate_operand" "=r,r  ,r,m    ,d,*r,q,r")
         (match_operand:ALL2 1 "nox_general_operand"   "r,Y00,m,r Y00,i,i ,r,q"))]
   "register_operand (operands[0], <MODE>mode)
    || reg_or_0_operand (operands[1], <MODE>mode)"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (match_dup 1))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mov<mode>"
+  [(set (match_operand:ALL2 0 "nonimmediate_operand" "=r,r  ,r,m    ,d,*r,q,r")
+        (match_operand:ALL2 1 "nox_general_operand"   "r,Y00,m,r Y00,i,i ,r,q"))
+   (clobber (reg:CC REG_CC))]
+  "(register_operand (operands[0], <MODE>mode)
+    || reg_or_0_operand (operands[1], <MODE>mode))
+   && reload_completed"
   {
     return output_movhi (insn, operands, NULL);
   }
   [(set_attr "length" "2,2,6,7,2,6,5,2")
-   (set_attr "adjust_len" "mov16")
-   (set_attr "cc" "none,none,clobber,clobber,none,clobber,none,none")])
+   (set_attr "adjust_len" "mov16")])
 
 (define_peephole2 ; movw
   [(set (match_operand:ALL1 0 "even_register_operand" "")
