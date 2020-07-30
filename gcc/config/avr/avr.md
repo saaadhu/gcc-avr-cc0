@@ -1532,14 +1532,26 @@
   "add %A0,%2\;clr %B0\;rol %B0"
   [(set_attr "length" "3")])
 
-(define_insn "*udiff_widenqihi3"
+(define_insn_and_split "*udiff_widenqihi3_split"
   [(set (match_operand:HI 0 "register_operand"                           "=r")
         (minus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "0"))
                   (zero_extend:HI (match_operand:QI 2 "register_operand"  "r"))))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (minus:HI (zero_extend:HI (match_dup 1))
+                             (zero_extend:HI (match_dup 2))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*udiff_widenqihi3"
+  [(set (match_operand:HI 0 "register_operand"                           "=r")
+        (minus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "0"))
+                  (zero_extend:HI (match_operand:QI 2 "register_operand"  "r"))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "sub %A0,%2\;sbc %B0,%B0"
-  [(set_attr "length" "2")
-   (set_attr "cc" "set_czn")])
+  [(set_attr "length" "2")])
     
 (define_insn "*addhi3_sp"
   [(set (match_operand:HI 1 "stack_register_operand"           "=q")
