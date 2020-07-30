@@ -1567,17 +1567,29 @@
 ;; "*addhi3"
 ;; "*addhq3" "*adduhq3"
 ;; "*addha3" "*adduha3"
-(define_insn "*add<mode>3"
+(define_insn_and_split "*add<mode>3_split"
   [(set (match_operand:ALL2 0 "register_operand"                   "=??r,d,!w    ,d")
         (plus:ALL2 (match_operand:ALL2 1 "register_operand"          "%0,0,0     ,0")
                    (match_operand:ALL2 2 "nonmemory_or_const_operand" "r,s,IJ YIJ,n Ynn")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (plus:ALL2 (match_dup 1)
+                              (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*add<mode>3"
+  [(set (match_operand:ALL2 0 "register_operand"                   "=??r,d,!w    ,d")
+        (plus:ALL2 (match_operand:ALL2 1 "register_operand"          "%0,0,0     ,0")
+                   (match_operand:ALL2 2 "nonmemory_or_const_operand" "r,s,IJ YIJ,n Ynn")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_plus (insn, operands);
   }
   [(set_attr "length" "2")
-   (set_attr "adjust_len" "plus")
-   (set_attr "cc" "plus")])
+   (set_attr "adjust_len" "plus")])
 
 ;; Adding a constant to NO_LD_REGS might have lead to a reload of
 ;; that constant to LD_REGS.  We don't add a scratch to *addhi3
