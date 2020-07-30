@@ -4419,12 +4419,27 @@
         * return avr_out_bitop (insn, operands, NULL);"
   [(set_attr "length" "1,1,2")])
 
-(define_insn "iorhi3"
+(define_insn_and_split "iorhi3"
   [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
         (ior:HI (match_operand:HI 1 "register_operand" "%0,0,0,0  ,0")
                 (match_operand:HI 2 "nonmemory_operand" "r,s,n,Co2,n")))
    (clobber (match_scratch:QI 3                        "=X,X,X,X  ,&d"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ior:HI (match_dup 1)
+                           (match_dup 2)))
+              (clobber (match_dup 3))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*iorhi3"
+  [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
+        (ior:HI (match_operand:HI 1 "register_operand" "%0,0,0,0  ,0")
+                (match_operand:HI 2 "nonmemory_operand" "r,s,n,Co2,n")))
+   (clobber (match_scratch:QI 3                        "=X,X,X,X  ,&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     if (which_alternative == 0)
       return "or %A0,%A2\;or %B0,%B2";
@@ -4434,8 +4449,7 @@
     return avr_out_bitop (insn, operands, NULL);
   }
   [(set_attr "length" "2,2,2,4,4")
-   (set_attr "adjust_len" "*,*,out_bitop,out_bitop,out_bitop")
-   (set_attr "cc" "set_n,set_n,clobber,clobber,clobber")])
+   (set_attr "adjust_len" "*,*,out_bitop,out_bitop,out_bitop")])
 
 (define_insn "iorpsi3"
   [(set (match_operand:PSI 0 "register_operand"        "=??r,d,r  ,r")
