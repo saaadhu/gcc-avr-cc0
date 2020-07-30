@@ -2062,14 +2062,26 @@
   [(set_attr "length" "4")
    ])
 
-(define_insn "*subsi3_zero_extend.hi"
+(define_insn_and_split "*subsi3_zero_extend.hi_split"
   [(set (match_operand:SI 0 "register_operand"                          "=r")
         (minus:SI (match_operand:SI 1 "register_operand"                 "0")
                   (zero_extend:SI (match_operand:HI 2 "register_operand" "r"))))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (minus:SI (match_dup 1)
+                             (zero_extend:SI (match_dup 2))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*subsi3_zero_extend.hi"
+  [(set (match_operand:SI 0 "register_operand"                          "=r")
+        (minus:SI (match_operand:SI 1 "register_operand"                 "0")
+                  (zero_extend:SI (match_operand:HI 2 "register_operand" "r"))))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "sub %A0,%2\;sbc %B0,%B2\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__"
-  [(set_attr "length" "4")
-   (set_attr "cc" "set_czn")])
+  [(set_attr "length" "4")])
 
 ;******************************************************************************
 ; mul
