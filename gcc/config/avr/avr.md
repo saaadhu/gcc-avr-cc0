@@ -7382,8 +7382,7 @@
   [(set (reg:CC REG_CC) (const_int 0))]
   "reload_completed"
   "sez"
-  [(set_attr "length" "1")
-   (set_attr "cc" "compare")])
+  [(set_attr "length" "1")])
 
 ;; Clear/set/test a single bit in I/O address space.
 
