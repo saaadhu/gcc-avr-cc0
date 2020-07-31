@@ -6940,8 +6940,7 @@
   {
     return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 0);
   }
-  [(set_attr "type" "branch")
-   (set_attr "cc" "none")])
+  [(set_attr "type" "branch")])
 
 ;; ****************************************************************
 ;; AVR does not have following conditional jumps: LE,LEU,GT,GTU.
@@ -7066,8 +7065,7 @@
                       (if_then_else (and (ge (minus (pc) (match_dup 0)) (const_int -2047))
                                          (le (minus (pc) (match_dup 0)) (const_int 2047)))
                                     (const_int 1)
-                                    (const_int 2))))
-   (set_attr "cc" "none")])
+                                    (const_int 2))))])
 
 ;; call
 
@@ -7170,8 +7168,7 @@
   [(const_int 0)]
   ""
   "nop"
-  [(set_attr "cc" "none")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 ; indirect jump
 
@@ -7198,8 +7195,7 @@
 	push %A0\;push %B0\;ret
 	eijmp"
   [(set_attr "length" "1,2,1,3,1")
-   (set_attr "isa" "rjmp,jmp,ijmp,ijmp,eijmp")
-   (set_attr "cc" "none")])
+   (set_attr "isa" "rjmp,jmp,ijmp,ijmp,eijmp")])
 
 ;; table jump
 ;; For entries in jump table see avr_output_addr_vec.
