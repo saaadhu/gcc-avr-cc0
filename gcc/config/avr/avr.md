@@ -5876,13 +5876,23 @@
 ;; 0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x
 ;; neg
 
-(define_insn "negqi2"
+(define_insn_and_split "negqi2"
   [(set (match_operand:QI 0 "register_operand" "=r")
         (neg:QI (match_operand:QI 1 "register_operand" "0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (neg:QI (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*negqi2"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+        (neg:QI (match_operand:QI 1 "register_operand" "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "neg %0"
-  [(set_attr "length" "1")
-   (set_attr "cc" "set_vzn")])
+  [(set_attr "length" "1")])
 
 (define_insn "*negqihi2"
   [(set (match_operand:HI 0 "register_operand"                        "=r")
