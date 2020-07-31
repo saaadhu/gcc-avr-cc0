@@ -9497,20 +9497,34 @@
                          (match_operand:QI 2 "const1_operand" "")
                          (match_operand:QI 3 "const_0_to_7_operand" "")))])
 
-(define_insn "*extzv"
+(define_insn_and_split "*extzv_split"
   [(set (match_operand:QI 0 "register_operand"                   "=*d,*d,*d,*d,r")
         (zero_extract:QI (match_operand:QI 1 "register_operand"     "0,r,0,0,r")
                          (const_int 1)
                          (match_operand:QI 2 "const_0_to_7_operand" "L,L,P,C04,n")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (zero_extract:QI (match_dup 1)
+                                    (const_int 1)
+                                    (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*extzv"
+  [(set (match_operand:QI 0 "register_operand"                   "=*d,*d,*d,*d,r")
+        (zero_extract:QI (match_operand:QI 1 "register_operand"     "0,r,0,0,r")
+                         (const_int 1)
+                         (match_operand:QI 2 "const_0_to_7_operand" "L,L,P,C04,n")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	andi %0,1
 	mov %0,%1\;andi %0,1
 	lsr %0\;andi %0,1
 	swap %0\;andi %0,1
 	bst %1,%2\;clr %0\;bld %0,0"
-  [(set_attr "length" "1,2,2,2,3")
-   (set_attr "cc" "set_zn,set_zn,set_zn,set_zn,clobber")])
+  [(set_attr "length" "1,2,2,2,3")])
 
 (define_insn_and_split "*extzv.qihi1"
   [(set (match_operand:HI 0 "register_operand"                     "=r")
