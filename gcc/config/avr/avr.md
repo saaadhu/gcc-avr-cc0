@@ -5022,17 +5022,29 @@
 
 ;; "*ashlqi3"
 ;; "*ashlqq3"  "*ashluqq3"
-(define_insn "*ashl<mode>3"
+(define_insn_and_split "*ashl<mode>3_split"
   [(set (match_operand:ALL1 0 "register_operand"              "=r,r,r,r,!d,r,r")
         (ashift:ALL1 (match_operand:ALL1 1 "register_operand"  "0,0,0,0,0 ,0,0")
                      (match_operand:QI 2 "nop_general_operand" "r,L,P,K,n ,n,Qm")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ashift:ALL1 (match_dup 1)
+                                (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*ashl<mode>3"
+  [(set (match_operand:ALL1 0 "register_operand"              "=r,r,r,r,!d,r,r")
+        (ashift:ALL1 (match_operand:ALL1 1 "register_operand"  "0,0,0,0,0 ,0,0")
+                     (match_operand:QI 2 "nop_general_operand" "r,L,P,K,n ,n,Qm")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return ashlqi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "5,0,1,2,4,6,9")
-   (set_attr "adjust_len" "ashlqi")
-   (set_attr "cc" "clobber,none,set_czn,set_czn,set_czn,set_czn,clobber")])
+   (set_attr "adjust_len" "ashlqi")])
 
 (define_insn "ashl<mode>3"
   [(set (match_operand:ALL2 0 "register_operand"              "=r,r,r,r,r,r,r")
