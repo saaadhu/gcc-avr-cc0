@@ -5388,17 +5388,29 @@
 ;; "ashrhi3"
 ;; "ashrhq3"  "ashruhq3"
 ;; "ashrha3"  "ashruha3"
-(define_insn "ashr<mode>3"
+(define_insn_and_split "ashr<mode>3"
   [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r,r,r,r,r")
         (ashiftrt:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,0,r,0,0,0")
                        (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r,r,r,r,r")
+                   (ashiftrt:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,0,r,0,0,0")
+                                  (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*ashr<mode>3"
+  [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r,r,r,r,r")
+        (ashiftrt:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,0,r,0,0,0")
+                       (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return ashrhi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "6,0,2,4,4,10,10")
-   (set_attr "adjust_len" "ashrhi")
-   (set_attr "cc" "clobber,none,clobber,set_n,clobber,clobber,clobber")])
+   (set_attr "adjust_len" "ashrhi")])
 
 (define_insn_and_split "ashrpsi3"
   [(set (match_operand:PSI 0 "register_operand"                 "=r,r,r,r,r")
