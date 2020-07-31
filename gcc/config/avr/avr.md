@@ -6190,16 +6190,26 @@
   [(set_attr "length" "4,6")
    (set_attr "adjust_len" "sext")])
 
-(define_insn "extendpsisi2"
+(define_insn_and_split "extendpsisi2"
   [(set (match_operand:SI 0 "register_operand"                                "=r")
         (sign_extend:SI (match_operand:PSI 1 "combine_pseudo_register_operand" "0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (sign_extend:SI (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*extendpsisi2"
+  [(set (match_operand:SI 0 "register_operand"                                "=r")
+        (sign_extend:SI (match_operand:PSI 1 "combine_pseudo_register_operand" "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_sign_extend (insn, operands, NULL);
   }
   [(set_attr "length" "3")
-   (set_attr "adjust_len" "sext")
-   (set_attr "cc" "set_n")])
+   (set_attr "adjust_len" "sext")])
 
 ;; xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x
 ;; zero extend
