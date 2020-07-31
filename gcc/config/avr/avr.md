@@ -4519,14 +4519,26 @@
 ;;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ;; xor
 
-(define_insn "xorqi3"
+(define_insn_and_split "xorqi3"
   [(set (match_operand:QI 0 "register_operand" "=r")
         (xor:QI (match_operand:QI 1 "register_operand" "%0")
                 (match_operand:QI 2 "register_operand" "r")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (xor:QI (match_dup 1)
+                           (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*xorqi3"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+        (xor:QI (match_operand:QI 1 "register_operand" "%0")
+                (match_operand:QI 2 "register_operand" "r")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "eor %0,%2"
-  [(set_attr "length" "1")
-   (set_attr "cc" "set_zn")])
+  [(set_attr "length" "1")])
 
 (define_insn "xorhi3"
   [(set (match_operand:HI 0 "register_operand"       "=??r,r  ,r")
