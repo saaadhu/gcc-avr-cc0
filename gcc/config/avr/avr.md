@@ -7406,8 +7406,7 @@
     operands[2] = GEN_INT (exact_log2 (INTVAL (operands[1]) & 0xff));
     return "sbi %i0,%2";
   }
-  [(set_attr "length" "1")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "1")])
 
 ;; Lower half of the I/O space - use sbic/sbis directly.
 (define_insn_and_split "*sbix_branch_split"
@@ -7864,8 +7863,7 @@
         (mem:QI (pre_inc:HI (reg:HI REG_SP))))]
   ""
   "pop %0"
-  [(set_attr "cc" "none")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 ;; Enable Interrupts
 (define_expand "enable_interrupt"
@@ -7898,8 +7896,7 @@
   "@
 	cli
 	sei"
-  [(set_attr "length" "1")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "1")])
 
 ;;  Library prologue saves
 (define_insn_and_split "call_prologue_saves"
@@ -8035,8 +8032,7 @@
   [(return)]
   "reload_completed && avr_simple_epilogue ()"
   "ret"
-  [(set_attr "cc" "none")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "return_from_epilogue"
   [(return)]
@@ -8045,8 +8041,7 @@
    && !(cfun->machine->is_interrupt || cfun->machine->is_signal)
    && !cfun->machine->is_naked"
   "ret"
-  [(set_attr "cc" "none")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "return_from_interrupt_epilogue"
   [(return)]
@@ -8055,8 +8050,7 @@
    && (cfun->machine->is_interrupt || cfun->machine->is_signal)
    && !cfun->machine->is_naked"
   "reti"
-  [(set_attr "cc" "none")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "return_from_naked_epilogue"
   [(return)]
@@ -8064,8 +8058,7 @@
    && cfun->machine
    && cfun->machine->is_naked"
   ""
-  [(set_attr "cc" "none")
-   (set_attr "length" "0")])
+  [(set_attr "length" "0")])
 
 (define_expand "prologue"
   [(const_int 0)]
@@ -8761,8 +8754,7 @@
                    UNSPEC_COPYSIGN))]
   ""
   "bst %D2,7\;bld %D0,7"
-  [(set_attr "length" "2")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "2")])
 
 ;; Swap Bytes (change byte-endianness)
 
@@ -8817,8 +8809,7 @@
   "@
 	nop
 	rjmp ."
-  [(set_attr "length" "1")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "1")])
 
 ;; SLEEP
 (define_expand "sleep"
@@ -8838,8 +8829,7 @@
 	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMORY_BARRIER))]
   ""
   "sleep"
-  [(set_attr "length" "1")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "1")])
 
 ;; WDR
 (define_expand "wdr"
@@ -8859,8 +8849,7 @@
 	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMORY_BARRIER))]
   ""
   "wdr"
-  [(set_attr "length" "1")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "1")])
 
 ;; FMUL
 (define_expand "fmul"
@@ -9094,8 +9083,7 @@
   "INTVAL(operands[4]) == exact_log2 (~INTVAL(operands[2]) & GET_MODE_MASK (QImode))
    && INTVAL(operands[4]) == exact_log2 (INTVAL(operands[5]) & GET_MODE_MASK (QImode))"
   "bst %3,0\;bld %0,%4"
-  [(set_attr "length" "2")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "2")])
 
 ;; Move bit $3.0 into bit $0.$4
 ;; Variation of above. Unfortunately, there is no canonicalized representation
@@ -9110,8 +9098,7 @@
                            (match_operand:QI 4 "const_0_to_7_operand"      "n"))))]
   "INTVAL(operands[4]) == exact_log2 (~INTVAL(operands[2]) & GET_MODE_MASK (QImode))"
   "bst %3,0\;bld %0,%4"
-  [(set_attr "length" "2")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "2")])
 
 ;; Move bit $3.0 into bit $0.0.
 ;; For bit 0, combiner generates slightly different pattern.
@@ -9123,8 +9110,7 @@
                         (const_int 1))))]
   "0 == exact_log2 (~INTVAL(operands[2]) & GET_MODE_MASK (QImode))"
   "bst %3,0\;bld %0,0"
-  [(set_attr "length" "2")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "2")])
 
 ;; Move bit $2.0 into bit $0.7.
 ;; For bit 7, combiner generates slightly different pattern
@@ -9136,8 +9122,7 @@
                            (const_int 7))))]
   ""
   "bst %2,0\;bld %0,7"
-  [(set_attr "length" "2")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "2")])
 
 ;; Combiner transforms above four pattern into ZERO_EXTRACT if it sees MEM
 ;; and input/output match.  We provide a special pattern for this, because
@@ -9153,8 +9138,7 @@
 	cbi %i0,%1
 	sbi %i0,%1
 	sbrc %2,0\;sbi %i0,%1\;sbrs %2,0\;cbi %i0,%1"
-  [(set_attr "length" "1,1,4")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "1,1,4")])
 
 (define_insn "*insv.not.io"
   [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "i"))
@@ -9163,8 +9147,7 @@
         (not:QI (match_operand:QI 2 "register_operand"                     "r")))]
   ""
   "sbrs %2,0\;sbi %i0,%1\;sbrc %2,0\;cbi %i0,%1"
-  [(set_attr "length" "4")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "4")])
 
 ;; The insv expander.
 ;; We only support 1-bit inserts
@@ -9206,8 +9189,7 @@
                         (match_operand:QI 3 "const_0_to_7_operand"  "n")))]
   ""
   "bst %2,%3\;bld %0,%1"
-  [(set_attr "length" "2")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "2")])
 
 ;; Insert bit $2.$3 into $0.$1
 (define_insn "*insv.shiftrt"
@@ -9218,8 +9200,7 @@
                         (match_operand:QI 3 "const_0_to_7_operand"  "n")))]
   ""
   "bst %2,%3\;bld %0,%1"
-  [(set_attr "length" "2")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "2")])
 
 ;; Same, but with a NOT inverting the source bit.
 ;; Insert bit ~$2.$3 into $0.$1
