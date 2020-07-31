@@ -6382,8 +6382,7 @@
                  (const_int 0)))]
   "reload_completed && !flag_wrapv && !flag_trapv"
   "cp __zero_reg__,%0"
-  [(set_attr "cc" "compare")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "*reversed_tstqi"
   [(set (reg:CC REG_CC)
@@ -6391,8 +6390,7 @@
                  (match_operand:QI 0 "register_operand" "r")))]
   "reload_completed"
   "cp __zero_reg__,%0"
-[(set_attr "cc" "compare")
- (set_attr "length" "2")])
+[(set_attr "length" "2")])
 
 (define_insn "*negated_tsthi"
   [(set (reg:CC REG_CC)
@@ -6401,8 +6399,7 @@
   "reload_completed && !flag_wrapv && !flag_trapv"
   "cp __zero_reg__,%A0
 	cpc __zero_reg__,%B0"
-[(set_attr "cc" "compare")
- (set_attr "length" "2")])
+[(set_attr "length" "2")])
 
 ;; Leave here the clobber used by the cmphi pattern for simplicity, even
 ;; though it is unused, because this pattern is synthesized by avr_reorg.
@@ -6414,8 +6411,7 @@
   "reload_completed"
   "cp __zero_reg__,%A0
 	cpc __zero_reg__,%B0"
-[(set_attr "cc" "compare")
- (set_attr "length" "2")])
+[(set_attr "length" "2")])
 
 (define_insn "*negated_tstpsi"
   [(set (reg:CC REG_CC)
@@ -6423,8 +6419,7 @@
                  (const_int 0)))]
   "reload_completed && !flag_wrapv && !flag_trapv"
   "cp __zero_reg__,%A0\;cpc __zero_reg__,%B0\;cpc __zero_reg__,%C0"
-  [(set_attr "cc" "compare")
-   (set_attr "length" "3")])
+  [(set_attr "length" "3")])
 
 (define_insn "*reversed_tstpsi"
   [(set (reg:CC REG_CC)
@@ -6433,8 +6428,7 @@
    (clobber (match_scratch:QI 1 "=X"))]
   "reload_completed"
   "cp __zero_reg__,%A0\;cpc __zero_reg__,%B0\;cpc __zero_reg__,%C0"
-  [(set_attr "cc" "compare")
-   (set_attr "length" "3")])
+  [(set_attr "length" "3")])
 
 (define_insn "*negated_tstsi"
   [(set (reg:CC REG_CC)
@@ -6445,8 +6439,7 @@
 	cpc __zero_reg__,%B0
 	cpc __zero_reg__,%C0
 	cpc __zero_reg__,%D0"
-  [(set_attr "cc" "compare")
-   (set_attr "length" "4")])
+  [(set_attr "length" "4")])
 
 ;; "*reversed_tstsi"
 ;; "*reversed_tstsq" "*reversed_tstusq"
@@ -6461,8 +6454,7 @@
 	cpc __zero_reg__,%B1
 	cpc __zero_reg__,%C1
 	cpc __zero_reg__,%D1"
-  [(set_attr "cc" "compare")
-   (set_attr "length" "4")])
+  [(set_attr "length" "4")])
 
 
 ;; "cmpqi3"
@@ -6476,8 +6468,7 @@
 	tst %0
 	cp %0,%1
 	cpi %0,lo8(%1)"
-  [(set_attr "cc" "compare,compare,compare")
-   (set_attr "length" "1,1,1")])
+  [(set_attr "length" "1,1,1")])
 
 (define_insn "*cmpqi_sign_extend"
   [(set (reg:CC REG_CC)
@@ -6485,8 +6476,7 @@
                  (match_operand:HI 1 "s8_operand"                       "n")))]
   "reload_completed"
   "cpi %0,lo8(%1)"
-  [(set_attr "cc" "compare")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 
 (define_insn "*cmphi.zero-extend.0"
@@ -6495,8 +6485,7 @@
                  (match_operand:HI 1 "register_operand" "r")))]
   "reload_completed"
   "cp %0,%A1\;cpc __zero_reg__,%B1"
-  [(set_attr "cc" "compare")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 (define_insn "*cmphi.zero-extend.1"
   [(set (reg:CC REG_CC)
@@ -6504,8 +6493,7 @@
                  (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))))]
   "reload_completed"
   "cp %A0,%1\;cpc %B0,__zero_reg__"
-  [(set_attr "cc" "compare")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 ;; "cmphi3"
 ;; "cmphq3" "cmpuhq3"
@@ -6541,8 +6529,7 @@
 
     return avr_out_compare (insn, operands, NULL);
   }
-  [(set_attr "cc" "compare")
-   (set_attr "length" "1,2,2,3,4,2,4")
+  [(set_attr "length" "1,2,2,3,4,2,4")
    (set_attr "adjust_len" "tsthi,tsthi,*,*,*,compare,compare")])
 
 (define_insn "*cmppsi"
@@ -6571,8 +6558,7 @@
 
     return avr_out_compare (insn, operands, NULL);
   }
-  [(set_attr "cc" "compare")
-   (set_attr "length" "3,3,5,6,3,7")
+  [(set_attr "length" "3,3,5,6,3,7")
    (set_attr "adjust_len" "tstpsi,*,*,*,compare,compare")])
 
 ;; "*cmpsi"
@@ -6592,8 +6578,7 @@
 
     return avr_out_compare (insn, operands, NULL);
   }
-  [(set_attr "cc" "compare")
-   (set_attr "length" "4,4,4,5,8")
+  [(set_attr "length" "4,4,4,5,8")
    (set_attr "adjust_len" "tstsi,*,compare,compare,compare")])
 
 
