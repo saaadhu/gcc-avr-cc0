@@ -5235,18 +5235,32 @@
 ;; "*ashlhi3_const"
 ;; "*ashlhq3_const"  "*ashluhq3_const"
 ;; "*ashlha3_const"  "*ashluha3_const"
-(define_insn "*ashl<mode>3_const"
+(define_insn_and_split "*ashl<mode>3_const_split"
   [(set (match_operand:ALL2 0 "register_operand"              "=r,r,r,r,r")
         (ashift:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,r,0,0")
                      (match_operand:QI 2 "const_int_operand"   "L,P,O,K,n")))
    (clobber (match_scratch:QI 3                               "=X,X,X,X,&d"))]
   "reload_completed"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ashift:ALL2 (match_dup 1)
+                                (match_dup 2)))
+              (clobber (match_dup 3))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*ashl<mode>3_const"
+  [(set (match_operand:ALL2 0 "register_operand"              "=r,r,r,r,r")
+        (ashift:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,r,0,0")
+                     (match_operand:QI 2 "const_int_operand"   "L,P,O,K,n")))
+   (clobber (match_scratch:QI 3                               "=X,X,X,X,&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return ashlhi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "0,2,2,4,10")
-   (set_attr "adjust_len" "ashlhi")
-   (set_attr "cc" "none,set_n,clobber,set_n,clobber")])
+   (set_attr "adjust_len" "ashlhi")])
 
 (define_peephole2
   [(match_scratch:QI 3 "d")
