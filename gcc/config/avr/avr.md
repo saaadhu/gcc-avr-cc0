@@ -5601,17 +5601,29 @@
 ;; "*lshrqi3"
 ;; "*lshrqq3"
 ;; "*lshruqq3"
-(define_insn "*lshr<mode>3"
+(define_insn_and_split "*lshr<mode>3_split"
   [(set (match_operand:ALL1 0 "register_operand"                  "=r,r,r,r,!d,r,r")
         (lshiftrt:ALL1 (match_operand:ALL1 1 "register_operand"    "0,0,0,0,0 ,0,0")
                        (match_operand:QI 2 "nop_general_operand"   "r,L,P,K,n ,n,Qm")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (lshiftrt:ALL1 (match_dup 1)
+                                  (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*lshr<mode>3"
+  [(set (match_operand:ALL1 0 "register_operand"                  "=r,r,r,r,!d,r,r")
+        (lshiftrt:ALL1 (match_operand:ALL1 1 "register_operand"    "0,0,0,0,0 ,0,0")
+                       (match_operand:QI 2 "nop_general_operand"   "r,L,P,K,n ,n,Qm")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return lshrqi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "5,0,1,2,4,6,9")
-   (set_attr "adjust_len" "lshrqi")
-   (set_attr "cc" "clobber,none,set_czn,set_czn,set_czn,set_czn,clobber")])
+   (set_attr "adjust_len" "lshrqi")])
 
 ;; "lshrhi3"
 ;; "lshrhq3"  "lshruhq3"
