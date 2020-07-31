@@ -5912,15 +5912,25 @@
   "clr %B0\;neg %A0\;brge .+2\;com %B0"
   [(set_attr "length" "4")])
 
-(define_insn "neghi2"
+(define_insn_and_split "neghi2"
   [(set (match_operand:HI 0 "register_operand"        "=r,&r")
         (neg:HI (match_operand:HI 1 "register_operand" "0,r")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (neg:HI (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*neghi2"
+  [(set (match_operand:HI 0 "register_operand"        "=r,&r")
+        (neg:HI (match_operand:HI 1 "register_operand" "0,r")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	neg %B0\;neg %A0\;sbc %B0,__zero_reg__
 	clr %A0\;clr %B0\;sub %A0,%A1\;sbc %B0,%B1"
-  [(set_attr "length" "3,4")
-   (set_attr "cc" "set_czn")])
+  [(set_attr "length" "3,4")])
 
 (define_insn "negpsi2"
   [(set (match_operand:PSI 0 "register_operand"        "=!d,r,&r")
