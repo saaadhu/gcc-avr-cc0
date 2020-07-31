@@ -5932,16 +5932,26 @@
 	clr %A0\;clr %B0\;sub %A0,%A1\;sbc %B0,%B1"
   [(set_attr "length" "3,4")])
 
-(define_insn "negpsi2"
+(define_insn_and_split "negpsi2"
   [(set (match_operand:PSI 0 "register_operand"        "=!d,r,&r")
         (neg:PSI (match_operand:PSI 1 "register_operand" "0,0,r")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (neg:PSI (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*negpsi2"
+  [(set (match_operand:PSI 0 "register_operand"        "=!d,r,&r")
+        (neg:PSI (match_operand:PSI 1 "register_operand" "0,0,r")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	com %C0\;com %B0\;neg %A0\;sbci %B0,-1\;sbci %C0,-1
 	com %C0\;com %B0\;com %A0\;adc %A0,__zero_reg__\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__
 	clr %A0\;clr %B0\;clr %C0\;sub %A0,%A1\;sbc %B0,%B1\;sbc %C0,%C1"
-  [(set_attr "length" "5,6,6")
-   (set_attr "cc" "set_czn,set_n,set_czn")])
+  [(set_attr "length" "5,6,6")])
 
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "register_operand"       "=!d,r,&r,&r")
