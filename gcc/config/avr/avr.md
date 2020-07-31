@@ -6085,16 +6085,26 @@
 ;; multiplication.  There is no need for combine to propagate hard registers,
 ;; register allocation can do it just as well.
 
-(define_insn "extendqihi2"
+(define_insn_and_split "extendqihi2"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
         (sign_extend:HI (match_operand:QI 1 "combine_pseudo_register_operand" "0,*r")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (sign_extend:HI (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*extendqihi2"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+        (sign_extend:HI (match_operand:QI 1 "combine_pseudo_register_operand" "0,*r")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_sign_extend (insn, operands, NULL);
   }
   [(set_attr "length" "3,4")
-   (set_attr "adjust_len" "sext")
-   (set_attr "cc" "set_n")])
+   (set_attr "adjust_len" "sext")])
 
 (define_insn "extendqipsi2"
   [(set (match_operand:PSI 0 "register_operand" "=r,r")
