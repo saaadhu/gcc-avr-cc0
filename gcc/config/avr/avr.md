@@ -5853,15 +5853,25 @@
   [(set_attr "length" "2")])
 
 
-(define_insn "abssf2"
+(define_insn_and_split "abssf2"
   [(set (match_operand:SF 0 "register_operand" "=d,r")
         (abs:SF (match_operand:SF 1 "register_operand" "0,0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (abs:SF (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*abssf2"
+  [(set (match_operand:SF 0 "register_operand" "=d,r")
+        (abs:SF (match_operand:SF 1 "register_operand" "0,0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	andi %D0,0x7f
 	clt\;bld %D0,7"
-  [(set_attr "length" "1,2")
-   (set_attr "cc" "set_n,clobber")])
+  [(set_attr "length" "1,2")])
 
 ;; 0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x  0 - x
 ;; neg
