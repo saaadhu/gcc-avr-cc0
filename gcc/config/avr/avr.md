@@ -5154,17 +5154,29 @@
 ;; "ashlsi3"
 ;; "ashlsq3"  "ashlusq3"
 ;; "ashlsa3"  "ashlusa3"
-(define_insn "ashl<mode>3"
+(define_insn_and_split "ashl<mode>3"
   [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r,r,r,r,r")
         (ashift:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r,0,0,0")
                      (match_operand:QI 2 "nop_general_operand"   "r,L,P,O,K,n,Qm")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ashift:ALL4 (match_dup 1)
+                                (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*ashl<mode>3"
+  [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r,r,r,r,r")
+        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r,0,0,0")
+                     (match_operand:QI 2 "nop_general_operand"   "r,L,P,O,K,n,Qm")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return ashlsi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "8,0,4,4,8,10,12")
-   (set_attr "adjust_len" "ashlsi")
-   (set_attr "cc" "clobber,none,set_n,clobber,set_n,clobber,clobber")])
+   (set_attr "adjust_len" "ashlsi")])
 
 ;; Optimize if a scratch register from LD_REGS happens to be available.
 
