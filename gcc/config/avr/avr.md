@@ -9182,20 +9182,34 @@
 ;; complicated.
 
 ;; Insert bit $2.0 into $0.$1
-(define_insn "*insv.reg"
+(define_insn_and_split "*insv.reg_split"
   [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r,d,d,l,l")
                          (const_int 1)
                          (match_operand:QI 1 "const_0_to_7_operand" "n,n,n,n,n"))
         (match_operand:QI 2 "nonmemory_operand"                     "r,L,P,L,P"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (zero_extract:QI (match_dup 0)
+                                    (const_int 1)
+                                    (match_dup 1))
+                   (match_dup 2))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*insv.reg"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r,d,d,l,l")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n,n,n,n,n"))
+        (match_operand:QI 2 "nonmemory_operand"                     "r,L,P,L,P"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	bst %2,0\;bld %0,%1
 	andi %0,lo8(~(1<<%1))
 	ori %0,lo8(1<<%1)
 	clt\;bld %0,%1
 	set\;bld %0,%1"
-  [(set_attr "length" "2,1,1,2,2")
-   (set_attr "cc" "none,set_zn,set_zn,none,none")])
+  [(set_attr "length" "2,1,1,2,2")])
 
 ;; Insert bit $2.$3 into $0.$1
 (define_insn "*insv.extract"
