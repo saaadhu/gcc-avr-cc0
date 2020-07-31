@@ -5999,13 +5999,23 @@
 ;; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ;; not
 
-(define_insn "one_cmplqi2"
+(define_insn_and_split "one_cmplqi2"
   [(set (match_operand:QI 0 "register_operand" "=r")
         (not:QI (match_operand:QI 1 "register_operand" "0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (not:QI (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*one_cmplqi2"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+        (not:QI (match_operand:QI 1 "register_operand" "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "com %0"
-  [(set_attr "length" "1")
-   (set_attr "cc" "set_czn")])
+  [(set_attr "length" "1")])
 
 (define_insn "one_cmplhi2"
   [(set (match_operand:HI 0 "register_operand" "=r")
