@@ -4602,12 +4602,27 @@
   [(set_attr "length" "3,6,6")
    (set_attr "adjust_len" "*,out_bitop,out_bitop")])
 
-(define_insn "xorsi3"
+(define_insn_and_split "xorsi3"
   [(set (match_operand:SI 0 "register_operand"       "=??r,r  ,r")
         (xor:SI (match_operand:SI 1 "register_operand" "%0,0  ,0")
                 (match_operand:SI 2 "nonmemory_operand" "r,Cx4,n")))
    (clobber (match_scratch:QI 3                        "=X,X  ,&d"))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (xor:SI (match_dup 1)
+                           (match_dup 2)))
+              (clobber (match_dup 3))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*xorsi3"
+  [(set (match_operand:SI 0 "register_operand"       "=??r,r  ,r")
+        (xor:SI (match_operand:SI 1 "register_operand" "%0,0  ,0")
+                (match_operand:SI 2 "nonmemory_operand" "r,Cx4,n")))
+   (clobber (match_scratch:QI 3                        "=X,X  ,&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     if (which_alternative == 0)
       return "eor %0,%2"   CR_TAB
@@ -4618,8 +4633,7 @@
     return avr_out_bitop (insn, operands, NULL);
   }
   [(set_attr "length" "4,8,8")
-   (set_attr "adjust_len" "*,out_bitop,out_bitop")
-   (set_attr "cc" "set_n,clobber,clobber")])
+   (set_attr "adjust_len" "*,out_bitop,out_bitop")])
 
 
 (define_split
