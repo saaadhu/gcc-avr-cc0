@@ -5522,18 +5522,32 @@
 ;; "*ashrsi3_const"
 ;; "*ashrsq3_const"  "*ashrusq3_const"
 ;; "*ashrsa3_const"  "*ashrusa3_const"
-(define_insn "*ashr<mode>3_const"
+(define_insn_and_split "*ashr<mode>3_const_split"
   [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r,r")
         (ashiftrt:ALL4 (match_operand:ALL4 1 "register_operand"  "0,0,r,0")
                        (match_operand:QI 2 "const_int_operand"   "L,P,O,n")))
    (clobber (match_scratch:QI 3                                 "=X,X,X,&d"))]
   "reload_completed"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ashiftrt:ALL4 (match_dup 1)
+                                  (match_dup 2)))
+              (clobber (match_dup 3))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*ashr<mode>3_const"
+  [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r,r")
+        (ashiftrt:ALL4 (match_operand:ALL4 1 "register_operand"  "0,0,r,0")
+                       (match_operand:QI 2 "const_int_operand"   "L,P,O,n")))
+   (clobber (match_scratch:QI 3                                 "=X,X,X,&d"))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return ashrsi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "0,4,4,10")
-   (set_attr "adjust_len" "ashrsi")
-   (set_attr "cc" "none,clobber,set_n,clobber")])
+   (set_attr "adjust_len" "ashrsi")])
 
 ;; >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >>
 ;; logical shift right
