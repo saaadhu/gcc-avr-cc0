@@ -5976,15 +5976,25 @@
   [(set_attr "length" "7,8,8,7")
    (set_attr "isa"    "*,*,mov,movw")])
 
-(define_insn "negsf2"
+(define_insn_and_split "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=d,r")
 	(neg:SF (match_operand:SF 1 "register_operand" "0,0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+	               (neg:SF (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*negsf2"
+  [(set (match_operand:SF 0 "register_operand" "=d,r")
+	(neg:SF (match_operand:SF 1 "register_operand" "0,0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	subi %D0,0x80
 	bst %D0,7\;com %D0\;bld %D0,7\;com %D0"
-  [(set_attr "length" "1,4")
-   (set_attr "cc" "set_n,set_n")])
+  [(set_attr "length" "1,4")])
 
 ;; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ;; not
