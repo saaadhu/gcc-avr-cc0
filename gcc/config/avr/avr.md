@@ -5361,17 +5361,29 @@
 
 ;; "ashrqi3"
 ;; "ashrqq3"  "ashruqq3"
-(define_insn "ashr<mode>3"
+(define_insn_and_split "ashr<mode>3"
   [(set (match_operand:ALL1 0 "register_operand"                  "=r,r,r,r,r          ,r      ,r")
         (ashiftrt:ALL1 (match_operand:ALL1 1 "register_operand"    "0,0,0,0,0          ,0      ,0")
                        (match_operand:QI 2 "nop_general_operand"   "r,L,P,K,C03 C04 C05,C06 C07,Qm")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ashiftrt:ALL1 (match_dup 1)
+                                  (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*ashr<mode>3"
+  [(set (match_operand:ALL1 0 "register_operand"                  "=r,r,r,r,r          ,r      ,r")
+        (ashiftrt:ALL1 (match_operand:ALL1 1 "register_operand"    "0,0,0,0,0          ,0      ,0")
+                       (match_operand:QI 2 "nop_general_operand"   "r,L,P,K,C03 C04 C05,C06 C07,Qm")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return ashrqi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "5,0,1,2,5,4,9")
-   (set_attr "adjust_len" "ashrqi")
-   (set_attr "cc" "clobber,none,set_czn,set_czn,set_czn,clobber,clobber")])
+   (set_attr "adjust_len" "ashrqi")])
 
 ;; "ashrhi3"
 ;; "ashrhq3"  "ashruhq3"
