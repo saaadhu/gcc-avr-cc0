@@ -7203,7 +7203,7 @@
 ;; Table made from
 ;;    "rjmp .L<n>"   instructions for <= 8K devices
 ;;    ".word gs(.L<n>)" addresses for >  8K devices
-(define_insn "*tablejump"
+(define_insn_and_split "*tablejump_split"
   [(set (pc)
         (unspec:HI [(match_operand:HI 0 "register_operand" "!z,*r,z")]
                    UNSPEC_INDEX_JMP))
@@ -7211,13 +7211,31 @@
    (clobber (match_dup 0))
    (clobber (const_int 0))]
   "!AVR_HAVE_EIJMP_EICALL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (pc)
+                   (unspec:HI [(match_dup 0)]
+                              UNSPEC_INDEX_JMP))
+              (use (label_ref (match_dup 1)))
+              (clobber (match_dup 0))
+              (clobber (const_int 0))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*tablejump"
+  [(set (pc)
+        (unspec:HI [(match_operand:HI 0 "register_operand" "!z,*r,z")]
+                   UNSPEC_INDEX_JMP))
+   (use (label_ref (match_operand 1 "" "")))
+   (clobber (match_dup 0))
+   (clobber (const_int 0))
+   (clobber (reg:CC REG_CC))]
+  "!AVR_HAVE_EIJMP_EICALL && reload_completed"
   "@
 	ijmp
 	push %A0\;push %B0\;ret
 	jmp __tablejump2__"
   [(set_attr "length" "1,3,2")
-   (set_attr "isa" "rjmp,rjmp,jmp")
-   (set_attr "cc" "none,none,clobber")])
+   (set_attr "isa" "rjmp,rjmp,jmp")])
 
 (define_insn_and_split "*tablejump.3byte-pc_split"
   [(set (pc)
