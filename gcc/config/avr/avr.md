@@ -6036,13 +6036,23 @@
 	com %B0"
   [(set_attr "length" "2")])
 
-(define_insn "one_cmplpsi2"
+(define_insn_and_split "one_cmplpsi2"
   [(set (match_operand:PSI 0 "register_operand" "=r")
         (not:PSI (match_operand:PSI 1 "register_operand" "0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (not:PSI (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*one_cmplpsi2"
+  [(set (match_operand:PSI 0 "register_operand" "=r")
+        (not:PSI (match_operand:PSI 1 "register_operand" "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "com %0\;com %B0\;com %C0"
-  [(set_attr "length" "3")
-   (set_attr "cc" "set_n")])
+  [(set_attr "length" "3")])
 
 (define_insn "one_cmplsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
