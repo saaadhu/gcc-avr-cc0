@@ -5681,17 +5681,29 @@
 ;; "lshrsi3"
 ;; "lshrsq3"  "lshrusq3"
 ;; "lshrsa3"  "lshrusa3"
-(define_insn "lshr<mode>3"
+(define_insn_and_split "lshr<mode>3"
   [(set (match_operand:ALL4 0 "register_operand"                  "=r,r,r,r,r,r,r")
         (lshiftrt:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r,0,0,0")
                        (match_operand:QI 2 "nop_general_operand"   "r,L,P,O,K,n,Qm")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (lshiftrt:ALL4 (match_dup 1)
+                                  (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*lshr<mode>3"
+  [(set (match_operand:ALL4 0 "register_operand"                  "=r,r,r,r,r,r,r")
+        (lshiftrt:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r,0,0,0")
+                       (match_operand:QI 2 "nop_general_operand"   "r,L,P,O,K,n,Qm")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return lshrsi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "8,0,4,4,8,10,12")
-   (set_attr "adjust_len" "lshrsi")
-   (set_attr "cc" "clobber,none,clobber,clobber,clobber,clobber,clobber")])
+   (set_attr "adjust_len" "lshrsi")])
 
 ;; Optimize if a scratch register from LD_REGS happens to be available.
 
