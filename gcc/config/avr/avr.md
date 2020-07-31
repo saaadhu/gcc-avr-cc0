@@ -5628,17 +5628,29 @@
 ;; "lshrhi3"
 ;; "lshrhq3"  "lshruhq3"
 ;; "lshrha3"  "lshruha3"
-(define_insn "lshr<mode>3"
+(define_insn_and_split "lshr<mode>3"
   [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r,r,r,r,r")
         (lshiftrt:ALL2 (match_operand:ALL2 1 "register_operand"    "0,0,0,r,0,0,0")
                        (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (lshiftrt:ALL2 (match_dup 1)
+                                  (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*lshr<mode>3"
+  [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r,r,r,r,r")
+        (lshiftrt:ALL2 (match_operand:ALL2 1 "register_operand"    "0,0,0,r,0,0,0")
+                       (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return lshrhi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "6,0,2,2,4,10,10")
-   (set_attr "adjust_len" "lshrhi")
-   (set_attr "cc" "clobber,none,clobber,clobber,clobber,clobber,clobber")])
+   (set_attr "adjust_len" "lshrhi")])
 
 (define_insn_and_split "lshrpsi3"
   [(set (match_operand:PSI 0 "register_operand"                 "=r,r,r,r,r")
