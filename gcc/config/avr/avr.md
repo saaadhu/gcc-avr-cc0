@@ -7395,8 +7395,7 @@
     operands[2] = GEN_INT (exact_log2 (~INTVAL (operands[1]) & 0xff));
     return "cbi %i0,%2";
   }
-  [(set_attr "length" "1")
-   (set_attr "cc" "none")])
+  [(set_attr "length" "1")])
 
 (define_insn "*sbi"
   [(set (mem:QI (match_operand 0 "low_io_address_operand" "i"))
