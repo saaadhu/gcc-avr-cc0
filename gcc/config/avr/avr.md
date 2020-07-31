@@ -7917,7 +7917,7 @@
   [(set_attr "length" "1")])
 
 ;;  Library prologue saves
-(define_insn_and_split "call_prologue_saves"
+(define_insn_and_split "*call_prologue_saves"
   [(unspec_volatile:HI [(const_int 0)] UNSPECV_PROLOGUE_SAVES)
    (match_operand:HI 0 "immediate_operand" "i,i")
    (set (reg:HI REG_SP)
@@ -7937,7 +7937,7 @@
               (clobber (reg:HI REG_Z))
               (clobber (reg:CC REG_CC))])])
 
-(define_insn "*call_prologue_saves"
+(define_insn "call_prologue_saves"
   [(unspec_volatile:HI [(const_int 0)] UNSPECV_PROLOGUE_SAVES)
    (match_operand:HI 0 "immediate_operand" "i,i")
    (set (reg:HI REG_SP)
@@ -7955,7 +7955,7 @@
    (set_attr "isa" "rjmp,jmp")])
 
 ;  epilogue  restores using library
-(define_insn_and_split "epilogue_restores"
+(define_insn_and_split "*epilogue_restores"
   [(unspec_volatile:QI [(const_int 0)] UNSPECV_EPILOGUE_RESTORES)
    (set (reg:HI REG_Y)
         (plus:HI (reg:HI REG_Y)
@@ -7977,7 +7977,7 @@
               (clobber (reg:QI REG_Z))
               (clobber (reg:CC REG_CC))])])
 
-(define_insn "*epilogue_restores"
+(define_insn "epilogue_restores"
   [(unspec_volatile:QI [(const_int 0)] UNSPECV_EPILOGUE_RESTORES)
    (set (reg:HI REG_Y)
         (plus:HI (reg:HI REG_Y)
