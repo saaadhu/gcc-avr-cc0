@@ -5826,6 +5826,8 @@ compare_condition (rtx_insn *insn)
   if (next && JUMP_P (next))
     {
       rtx pat = PATTERN (next);
+      if (GET_CODE(pat) == PARALLEL)
+        pat = XEXP (pat, 0);
       rtx src = SET_SRC (pat);
 
       if (IF_THEN_ELSE == GET_CODE (src))
