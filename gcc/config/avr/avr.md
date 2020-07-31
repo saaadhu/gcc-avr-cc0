@@ -4718,11 +4718,24 @@
         (rotate:QI (match_operand:QI 1 "register_operand" "")
                    (const_int 4)))])
 
-(define_insn "*rotlqi3"
+(define_insn_and_split "*rotlqi3_split"
   [(set (match_operand:QI 0 "register_operand"               "=r,r,r  ,r  ,r  ,r  ,r  ,r")
         (rotate:QI (match_operand:QI 1 "register_operand"     "0,0,0  ,0  ,0  ,0  ,0  ,0")
                    (match_operand:QI 2 "const_0_to_7_operand" "P,K,C03,C04,C05,C06,C07,L")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (rotate:QI (match_dup 1)
+                              (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*rotlqi3"
+  [(set (match_operand:QI 0 "register_operand"               "=r,r,r  ,r  ,r  ,r  ,r  ,r")
+        (rotate:QI (match_operand:QI 1 "register_operand"     "0,0,0  ,0  ,0  ,0  ,0  ,0")
+                   (match_operand:QI 2 "const_0_to_7_operand" "P,K,C03,C04,C05,C06,C07,L")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "@
 	lsl %0\;adc %0,__zero_reg__
 	lsl %0\;adc %0,__zero_reg__\;lsl %0\;adc %0,__zero_reg__
@@ -4732,8 +4745,7 @@
 	swap %0\;lsl %0\;adc %0,__zero_reg__\;lsl %0\;adc %0,__zero_reg__
 	bst %0,0\;ror %0\;bld %0,7
 	" ; empty
-  [(set_attr "length" "2,4,4,1,3,5,3,0")
-   (set_attr "cc" "set_n,set_n,clobber,none,set_n,set_n,clobber,none")])
+  [(set_attr "length" "2,4,4,1,3,5,3,0")])
 
 ;; Split all rotates of HI,SI and PSImode registers where rotation is by
 ;; a whole number of bytes.  The split creates the appropriate moves and
