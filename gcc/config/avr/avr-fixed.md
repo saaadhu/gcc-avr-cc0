@@ -202,13 +202,23 @@
   "neg %0\;brvc 0f\;dec %0\;0:"
   [(set_attr "length" "3")])
 
-(define_insn "ssabsqq2"
+(define_insn_and_split "ssabsqq2"
   [(set (match_operand:QQ 0 "register_operand"            "=r")
         (ss_abs:QQ (match_operand:QQ 1 "register_operand"  "0")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ss_abs:QQ (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*ssabsqq2"
+  [(set (match_operand:QQ 0 "register_operand"            "=r")
+        (ss_abs:QQ (match_operand:QQ 1 "register_operand"  "0")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "sbrc %0,7\;neg %0\;sbrc %0,7\;dec %0"
-  [(set_attr "cc" "clobber")
-   (set_attr "length" "4")])
+  [(set_attr "length" "4")])
 
 ;; "ssneghq2"  "ssnegha2"  "ssnegsq2"  "ssnegsa2"
 ;; "ssabshq2"  "ssabsha2"  "ssabssq2"  "ssabssa2"
