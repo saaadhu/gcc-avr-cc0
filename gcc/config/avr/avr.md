@@ -894,7 +894,10 @@
   [(set (match_operand:HISI 0 "register_operand" "")
         (match_operand:HISI 1 "memory_operand" ""))]
   "reload_completed
-   && AVR_HAVE_LPMX"
+   && AVR_HAVE_LPMX
+   && avr_mem_flash_p (operands[1])
+   && REG_P (XEXP (operands[1], 0))
+   && !reg_overlap_mentioned_p (XEXP (operands[1], 0), operands[0])"
   [(set (match_dup 0)
         (match_dup 2))
    (set (match_dup 3)
@@ -902,13 +905,6 @@
                  (match_dup 4)))]
   {
      rtx addr = XEXP (operands[1], 0);
-
-     if (!avr_mem_flash_p (operands[1])
-         || !REG_P (addr)
-         || reg_overlap_mentioned_p (addr, operands[0]))
-       {
-         FAIL;
-       }
 
     operands[2] = replace_equiv_address (operands[1],
                                          gen_rtx_POST_INC (Pmode, addr));
