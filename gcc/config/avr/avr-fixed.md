@@ -600,16 +600,32 @@
   })
 
 ;; "*divsa3.call" "*udivusa3.call"
-(define_insn "*<code><mode>3.call"
+(define_insn_and_split "*<code><mode>3.call_split"
   [(set (reg:ALL4A 22)
         (usdiv:ALL4A (reg:ALL4A 24)
                      (reg:ALL4A 18)))
    (clobber (reg:HI 26))
    (clobber (reg:HI 30))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL4A 22)
+                   (usdiv:ALL4A (reg:ALL4A 24)
+                                (reg:ALL4A 18)))
+              (clobber (reg:HI 26))
+              (clobber (reg:HI 30))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code><mode>3.call"
+  [(set (reg:ALL4A 22)
+        (usdiv:ALL4A (reg:ALL4A 24)
+                     (reg:ALL4A 18)))
+   (clobber (reg:HI 26))
+   (clobber (reg:HI 30))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __<code><mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 
 ;******************************************************************************
