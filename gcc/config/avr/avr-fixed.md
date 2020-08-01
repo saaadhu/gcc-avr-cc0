@@ -462,14 +462,26 @@
   })
 
 ;; "*mulsa3.call" "*mulusa3.call"
-(define_insn "*mul<mode>3.call"
+(define_insn_and_split "*mul<mode>3.call_split"
   [(set (reg:ALL4A 24)
         (mult:ALL4A (reg:ALL4A 16)
                     (reg:ALL4A 20)))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL4A 24)
+                   (mult:ALL4A (reg:ALL4A 16)
+                               (reg:ALL4A 20)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mul<mode>3.call"
+  [(set (reg:ALL4A 24)
+        (mult:ALL4A (reg:ALL4A 16)
+                    (reg:ALL4A 20)))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "%~call __mul<mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ; / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / /
 ; div
