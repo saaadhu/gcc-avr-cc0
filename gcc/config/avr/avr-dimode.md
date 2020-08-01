@@ -416,13 +416,23 @@
     DONE;
   })
 
-(define_insn "negdi2_insn"
+(define_insn_and_split "negdi2_insn"
   [(set (reg:DI ACC_A)
         (neg:DI (reg:DI ACC_A)))]
   "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:DI ACC_A)
+                   (neg:DI (reg:DI ACC_A)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*negdi2_insn"
+  [(set (reg:DI ACC_A)
+        (neg:DI (reg:DI ACC_A)))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode && reload_completed"
   "%~call __negdi2"
-  [(set_attr "adjust_len" "call")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "call")])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
