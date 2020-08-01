@@ -355,14 +355,26 @@
     DONE;
   })
 
-(define_insn "<code_stdname><mode>3_insn"
+(define_insn_and_split "<code_stdname><mode>3_insn"
   [(set (reg:ALL8U ACC_A)
         (us_addsub:ALL8U (reg:ALL8U ACC_A)
                          (reg:ALL8U ACC_B)))]
   "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL8U ACC_A)
+                   (us_addsub:ALL8U (reg:ALL8U ACC_A)
+                                    (reg:ALL8U ACC_B)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code_stdname><mode>3_insn"
+  [(set (reg:ALL8U ACC_A)
+        (us_addsub:ALL8U (reg:ALL8U ACC_A)
+                         (reg:ALL8U ACC_B)))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode && reload_completed"
   "%~call __<code_stdname><mode>3"
-  [(set_attr "adjust_len" "call")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "call")])
 
 (define_insn "<code_stdname><mode>3_const_insn"
   [(set (reg:ALL8U ACC_A)
