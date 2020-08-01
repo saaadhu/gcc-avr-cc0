@@ -303,16 +303,28 @@
   "%~call __<code_stdname><mode>3"
   [(set_attr "adjust_len" "call")])
 
-(define_insn "<code_stdname><mode>3_const_insn"
+(define_insn_and_split "<code_stdname><mode>3_const_insn"
   [(set (reg:ALL8S ACC_A)
         (ss_addsub:ALL8S (reg:ALL8S ACC_A)
                          (match_operand:ALL8S 0 "const_operand" "n Ynn")))]
   "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL8S ACC_A)
+                   (ss_addsub:ALL8S (reg:ALL8S ACC_A)
+                                    (match_dup 0)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code_stdname><mode>3_const_insn"
+  [(set (reg:ALL8S ACC_A)
+        (ss_addsub:ALL8S (reg:ALL8S ACC_A)
+                         (match_operand:ALL8S 0 "const_operand" "n Ynn")))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode && reload_completed"
   {
     return avr_out_plus (insn, operands);
   }
-  [(set_attr "adjust_len" "plus")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "plus")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Unsigned Saturating Addition and Subtraction
