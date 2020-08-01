@@ -418,15 +418,29 @@
 
 ;; "*mulhq3.call"  "*muluhq3.call"
 ;; "*mulha3.call"  "*muluha3.call"
-(define_insn "*mul<mode>3.call"
+(define_insn_and_split "*mul<mode>3.call_split"
   [(set (reg:ALL2QA 24)
         (mult:ALL2QA (reg:ALL2QA 18)
                      (reg:ALL2QA 26)))
    (clobber (reg:HI 22))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL2QA 24)
+                   (mult:ALL2QA (reg:ALL2QA 18)
+                                (reg:ALL2QA 26)))
+              (clobber (reg:HI 22))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mul<mode>3.call"
+  [(set (reg:ALL2QA 24)
+        (mult:ALL2QA (reg:ALL2QA 18)
+                     (reg:ALL2QA 26)))
+   (clobber (reg:HI 22))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "%~call __mul<mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 
 ;; On the enhanced core, don't clobber either input and use a separate output
