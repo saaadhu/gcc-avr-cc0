@@ -369,16 +369,32 @@
     avr_fix_inputs (operands, 1 << 2, regmask (UQQmode, 22));
   })
 
-(define_insn "*mulqq3.call"
+(define_insn_and_split "*mulqq3.call_split"
   [(set (reg:QQ 23)
         (mult:QQ (reg:QQ 24)
                  (reg:QQ 25)))
    (clobber (reg:QI 22))
    (clobber (reg:HI 24))]
   "!AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:QQ 23)
+                   (mult:QQ (reg:QQ 24)
+                            (reg:QQ 25)))
+              (clobber (reg:QI 22))
+              (clobber (reg:HI 24))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mulqq3.call"
+  [(set (reg:QQ 23)
+        (mult:QQ (reg:QQ 24)
+                 (reg:QQ 25)))
+   (clobber (reg:QI 22))
+   (clobber (reg:HI 24))
+   (clobber (reg:CC REG_CC))]
+  "!AVR_HAVE_MUL && reload_completed"
   "%~call __mulqq3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 
 ;; "mulhq3" "muluhq3"
