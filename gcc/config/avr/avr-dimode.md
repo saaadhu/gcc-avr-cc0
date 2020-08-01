@@ -141,17 +141,31 @@
 ;; "adddq3_const_insn" "addudq3_const_insn"
 ;; "addda3_const_insn" "adduda3_const_insn"
 ;; "addta3_const_insn" "adduta3_const_insn"
-(define_insn "add<mode>3_const_insn"
+(define_insn_and_split "add<mode>3_const_insn"
   [(set (reg:ALL8 ACC_A)
         (plus:ALL8 (reg:ALL8 ACC_A)
                    (match_operand:ALL8 0 "const_operand" "n Ynn")))]
   "avr_have_dimode
    && !s8_operand (operands[0], VOIDmode)"
+   "#"
+   "&& reload_completed"
+   [(parallel [(set (reg:ALL8 ACC_A)
+                    (plus:ALL8 (reg:ALL8 ACC_A)
+                               (match_dup 0)))
+               (clobber (reg:CC REG_CC))])])
+
+(define_insn "*add<mode>3_const_insn"
+  [(set (reg:ALL8 ACC_A)
+        (plus:ALL8 (reg:ALL8 ACC_A)
+                   (match_operand:ALL8 0 "const_operand" "n Ynn")))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode
+   && !s8_operand (operands[0], VOIDmode)
+   && reload_completed"
   {
     return avr_out_plus (insn, operands);
   }
-  [(set_attr "adjust_len" "plus")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "plus")])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
