@@ -1549,13 +1549,22 @@
   "sub %A0,%2\;sbc %B0,%B0"
   [(set_attr "length" "2")])
     
-(define_insn "*addhi3_sp"
+(define_insn_and_split "*addhi3_sp"
   [(set (match_operand:HI 1 "stack_register_operand"           "=q")
         (plus:HI (match_operand:HI 2 "stack_register_operand"   "q")
                  (match_operand:HI 0 "avr_sp_immediate_operand" "Csp")))]
   ""
   {
     return avr_out_addto_sp (operands, NULL);
+  }
+  ""
+  [(const_int 0)]
+  {
+    /* Do not attempt to split this pattern. This FAIL is necessary
+       to prevent the splitter from matching *add<ALL2>3_split, splitting
+       it, and then failing later because constraints don't match, as split
+       does not look at constraints. */
+    FAIL;
   }
   [(set_attr "length" "6")
    (set_attr "adjust_len" "addto_sp")])
