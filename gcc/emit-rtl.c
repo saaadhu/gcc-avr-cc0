@@ -3822,10 +3822,6 @@ try_split (rtx pat, rtx_insn *trial, int last)
   int njumps = 0;
   rtx_insn *call_insn = NULL;
 
-  /* We're not good at redistributing frame information.  */
-  if (RTX_FRAME_RELATED_P (trial))
-    return trial;
-
   if (any_condjump_p (trial)
       && (note = find_reg_note (trial, REG_BR_PROB, 0)))
     split_branch_probability
@@ -3842,6 +3838,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
   if (!seq)
     return trial;
 
+  int split_insn_count = 0;
   /* Avoid infinite loop if any insn of the result matches
      the original pattern.  */
   insn_last = seq;
@@ -3850,10 +3847,86 @@ try_split (rtx pat, rtx_insn *trial, int last)
       if (INSN_P (insn_last)
 	  && rtx_equal_p (PATTERN (insn_last), pat))
 	return trial;
+	  split_insn_count++;
       if (!NEXT_INSN (insn_last))
 	break;
       insn_last = NEXT_INSN (insn_last);
     }
+
+  /* We're not good at redistributing frame information if
+     the split results in more than one insn  */
+  if (RTX_FRAME_RELATED_P (trial))
+	{
+	  if (split_insn_count != 1)
+        return trial;
+
+	  // Copy from recog.c:peep2_attempt
+      bool any_note = false;
+      rtx note;
+	  rtx_insn *new_insn = seq;
+	  rtx_insn *old_insn = trial;
+
+      /* We have a 1-1 replacement.  Copy over any frame-related info.  */
+      RTX_FRAME_RELATED_P (new_insn) = 1;
+
+      /* Allow the backend to fill in a note during the split.  */
+      for (note = REG_NOTES (new_insn); note ; note = XEXP (note, 1))
+	switch (REG_NOTE_KIND (note))
+	  {
+	  case REG_FRAME_RELATED_EXPR:
+	  case REG_CFA_DEF_CFA:
+	  case REG_CFA_ADJUST_CFA:
+	  case REG_CFA_OFFSET:
+	  case REG_CFA_REGISTER:
+	  case REG_CFA_EXPRESSION:
+	  case REG_CFA_RESTORE:
+	  case REG_CFA_SET_VDRAP:
+	    any_note = true;
+	    break;
+	  default:
+	    break;
+	  }
+
+      /* If the backend didn't supply a note, copy one over.  */
+      if (!any_note)
+        for (note = REG_NOTES (old_insn); note ; note = XEXP (note, 1))
+	  switch (REG_NOTE_KIND (note))
+	    {
+	    case REG_FRAME_RELATED_EXPR:
+	    case REG_CFA_DEF_CFA:
+	    case REG_CFA_ADJUST_CFA:
+	    case REG_CFA_OFFSET:
+	    case REG_CFA_REGISTER:
+	    case REG_CFA_EXPRESSION:
+	    case REG_CFA_RESTORE:
+	    case REG_CFA_SET_VDRAP:
+	      add_reg_note (new_insn, REG_NOTE_KIND (note), XEXP (note, 0));
+	      any_note = true;
+	      break;
+	    default:
+	      break;
+	    }
+
+      /* If there still isn't a note, make sure the unwind info sees the
+	 same expression as before the split.  */
+      if (!any_note)
+	{
+	  rtx old_set, new_set;
+
+	  /* The old insn had better have been simple, or annotated.  */
+	  old_set = single_set (old_insn);
+	  gcc_assert (old_set != NULL);
+
+	  new_set = single_set (new_insn);
+	  if (!new_set || !rtx_equal_p (new_set, old_set))
+	    add_reg_note (new_insn, REG_FRAME_RELATED_EXPR, old_set);
+	}
+
+      /* Copy prologue/epilogue status.  This is required in order to keep
+	 proper placement of EPILOGUE_BEG and the DW_CFA_remember_state.  */
+      maybe_copy_prologue_epilogue_insn (old_insn, new_insn);
+  }
+
 
   /* We will be adding the new sequence to the function.  The splitters
      may have introduced invalid RTL sharing, so unshare the sequence now.  */
