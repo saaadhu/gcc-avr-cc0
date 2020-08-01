@@ -290,14 +290,26 @@
     DONE;
   })
 
-(define_insn "mulqq3_enh"
+(define_insn_and_split "mulqq3_enh"
   [(set (match_operand:QQ 0 "register_operand"         "=r")
         (mult:QQ (match_operand:QQ 1 "register_operand" "a")
                  (match_operand:QQ 2 "register_operand" "a")))]
   "AVR_HAVE_MUL"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (mult:QQ (match_dup 1)
+                            (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*mulqq3_enh"
+  [(set (match_operand:QQ 0 "register_operand"         "=r")
+        (mult:QQ (match_operand:QQ 1 "register_operand" "a")
+                 (match_operand:QQ 2 "register_operand" "a")))
+   (clobber (reg:CC REG_CC))]
+  "AVR_HAVE_MUL && reload_completed"
   "fmuls %1,%2\;dec r1\;brvs 0f\;inc r1\;0:\;mov %0,r1\;clr __zero_reg__"
-  [(set_attr "length" "6")
-   (set_attr "cc" "clobber")])
+  [(set_attr "length" "6")])
 
 (define_insn "muluqq3_enh"
   [(set (match_operand:UQQ 0 "register_operand"          "=r")
