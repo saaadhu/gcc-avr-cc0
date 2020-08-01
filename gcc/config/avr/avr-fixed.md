@@ -118,16 +118,28 @@
 
 ;; "ssaddqq3"  "ssaddhq3"  "ssaddha3"  "ssaddsq3"  "ssaddsa3"
 ;; "sssubqq3"  "sssubhq3"  "sssubha3"  "sssubsq3"  "sssubsa3"
-(define_insn "<code_stdname><mode>3"
+(define_insn_and_split "<code_stdname><mode>3"
   [(set (match_operand:ALL124S 0 "register_operand"                          "=??d,d")
         (ss_addsub:ALL124S (match_operand:ALL124S 1 "register_operand" "<abelian>0,0")
                            (match_operand:ALL124S 2 "nonmemory_operand"         "r,Ynn")))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (ss_addsub:ALL124S (match_dup 1)
+                                      (match_dup 2)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code_stdname><mode>3"
+  [(set (match_operand:ALL124S 0 "register_operand"                          "=??d,d")
+        (ss_addsub:ALL124S (match_operand:ALL124S 1 "register_operand" "<abelian>0,0")
+                           (match_operand:ALL124S 2 "nonmemory_operand"         "r,Ynn")))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_plus (insn, operands);
   }
-  [(set_attr "cc" "clobber")
-   (set_attr "adjust_len" "plus")])
+  [(set_attr "adjust_len" "plus")])
 
 ;; "usadduqq3"  "usadduhq3"  "usadduha3" "usaddusq3"  "usaddusa3"
 ;; "ussubuqq3"  "ussubuhq3"  "ussubuha3" "ussubusq3"  "ussubusa3"
