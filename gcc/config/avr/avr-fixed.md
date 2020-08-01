@@ -676,18 +676,34 @@
 ;; "roundqq3_const"  "rounduqq3_const"
 ;; "roundhq3_const"  "rounduhq3_const"  "roundha3_const"  "rounduha3_const"
 ;; "roundsq3_const"  "roundusq3_const"  "roundsa3_const"  "roundusa3_const"
-(define_insn "round<mode>3_const"
+(define_insn_and_split "round<mode>3_const"
   [(set (match_operand:ALL124QA 0 "register_operand"                  "=d")
         (unspec:ALL124QA [(match_operand:ALL124QA 1 "register_operand" "0")
                           (match_operand:HI 2 "const_int_operand"      "n")
                           (const_int 0)]
                          UNSPEC_ROUND))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (unspec:ALL124QA [(match_dup 1)
+                                     (match_dup 2)
+                                     (const_int 0)]
+                                    UNSPEC_ROUND))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*round<mode>3_const"
+  [(set (match_operand:ALL124QA 0 "register_operand"                  "=d")
+        (unspec:ALL124QA [(match_operand:ALL124QA 1 "register_operand" "0")
+                          (match_operand:HI 2 "const_int_operand"      "n")
+                          (const_int 0)]
+                         UNSPEC_ROUND))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   {
     return avr_out_round (insn, operands);
   }
-  [(set_attr "cc" "clobber")
-   (set_attr "adjust_len" "round")])
+  [(set_attr "adjust_len" "round")])
 
 
 ;; "*roundqq3.libgcc"  "*rounduqq3.libgcc"
