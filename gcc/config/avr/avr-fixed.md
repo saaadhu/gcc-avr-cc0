@@ -507,15 +507,29 @@
 
 
 ;; "*divqq3.call" "*udivuqq3.call"
-(define_insn "*<code><mode>3.call"
+(define_insn_and_split "*<code><mode>3.call_split"
   [(set (reg:ALL1Q 24)
         (usdiv:ALL1Q (reg:ALL1Q 25)
                      (reg:ALL1Q 22)))
    (clobber (reg:QI 25))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL1Q 24)
+                   (usdiv:ALL1Q (reg:ALL1Q 25)
+                                (reg:ALL1Q 22)))
+              (clobber (reg:QI 25))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code><mode>3.call"
+  [(set (reg:ALL1Q 24)
+        (usdiv:ALL1Q (reg:ALL1Q 25)
+                     (reg:ALL1Q 22)))
+   (clobber (reg:QI 25))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __<code><mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; "divhq3" "udivuhq3"
 ;; "divha3" "udivuha3"
