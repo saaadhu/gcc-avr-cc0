@@ -230,16 +230,28 @@
 ;; "subdq3_const_insn" "subudq3_const_insn"
 ;; "subda3_const_insn" "subuda3_const_insn"
 ;; "subta3_const_insn" "subuta3_const_insn"
-(define_insn "sub<mode>3_const_insn"
+(define_insn_and_split "sub<mode>3_const_insn"
   [(set (reg:ALL8 ACC_A)
         (minus:ALL8 (reg:ALL8 ACC_A)
                     (match_operand:ALL8 0 "const_operand" "n Ynn")))]
   "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL8 ACC_A)
+                   (minus:ALL8 (reg:ALL8 ACC_A)
+                               (match_dup 0)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*sub<mode>3_const_insn"
+  [(set (reg:ALL8 ACC_A)
+        (minus:ALL8 (reg:ALL8 ACC_A)
+                    (match_operand:ALL8 0 "const_operand" "n Ynn")))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode && reload_completed"
   {
     return avr_out_plus (insn, operands);
   }
-  [(set_attr "adjust_len" "plus")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "plus")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Signed Saturating Addition and Subtraction
