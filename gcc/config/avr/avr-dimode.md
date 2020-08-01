@@ -512,8 +512,7 @@
                  (reg:ALL8 ACC_B)))]
   "reload_completed && avr_have_dimode"
   "%~call __cmpdi2"
-  [(set_attr "adjust_len" "call")
-   (set_attr "cc" "compare")])
+  [(set_attr "adjust_len" "call")])
 
 (define_insn_and_split "cbranch_const8_di2_split"
   [(set (pc)
@@ -538,8 +537,7 @@
                  (sign_extend:DI (reg:QI REG_X))))]
   "reload_completed && avr_have_dimode"
   "%~call __cmpdi2_s8"
-  [(set_attr "adjust_len" "call")
-   (set_attr "cc" "compare")])
+  [(set_attr "adjust_len" "call")])
 
 (define_insn_and_split "cbranch_const_<mode>2_split"
   [(set (pc)
@@ -576,8 +574,7 @@
   {
     return avr_out_compare64 (insn, operands, NULL);
   }
-  [(set_attr "adjust_len" "compare64")
-   (set_attr "cc" "compare")])
+  [(set_attr "adjust_len" "compare64")])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
