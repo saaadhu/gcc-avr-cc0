@@ -116,14 +116,26 @@
   "%~call __adddi3"
   [(set_attr "adjust_len" "call")])
 
-(define_insn "adddi3_const8_insn"
+(define_insn_and_split "adddi3_const8_insn"
   [(set (reg:DI ACC_A)
         (plus:DI (reg:DI ACC_A)
                  (sign_extend:DI (reg:QI REG_X))))]
   "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:DI ACC_A)
+                   (plus:DI (reg:DI ACC_A)
+                            (sign_extend:DI (reg:QI REG_X))))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*adddi3_const8_insn"
+  [(set (reg:DI ACC_A)
+        (plus:DI (reg:DI ACC_A)
+                 (sign_extend:DI (reg:QI REG_X))))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode && reload_completed"
   "%~call __adddi3_s8"
-  [(set_attr "adjust_len" "call")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "call")])
 
 ;; "adddi3_const_insn"
 ;; "adddq3_const_insn" "addudq3_const_insn"
