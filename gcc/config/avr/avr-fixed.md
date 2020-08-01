@@ -80,16 +80,29 @@
   }
   [(set_attr "adjust_len" "sfract")])
 
-(define_insn "fractuns<FIXED_B:mode><FIXED_A:mode>2"
+(define_insn_and_split "fractuns<FIXED_B:mode><FIXED_A:mode>2"
   [(set (match_operand:FIXED_A 0 "register_operand" "=r")
         (unsigned_fract_convert:FIXED_A
          (match_operand:FIXED_B 1 "register_operand" "r")))]
   "<FIXED_B:MODE>mode != <FIXED_A:MODE>mode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (unsigned_fract_convert:FIXED_A
+                    (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*fractuns<FIXED_B:mode><FIXED_A:mode>2"
+  [(set (match_operand:FIXED_A 0 "register_operand" "=r")
+        (unsigned_fract_convert:FIXED_A
+         (match_operand:FIXED_B 1 "register_operand" "r")))
+   (clobber (reg:CC REG_CC))]
+  "<FIXED_B:MODE>mode != <FIXED_A:MODE>mode
+   && reload_completed"
   {
     return avr_out_fract (insn, operands, false, NULL);
   }
-  [(set_attr "cc" "clobber")
-   (set_attr "adjust_len" "ufract")])
+  [(set_attr "adjust_len" "ufract")])
 
 ;******************************************************************************
 ;** Saturated Addition and Subtraction
