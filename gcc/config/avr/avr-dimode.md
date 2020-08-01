@@ -376,16 +376,28 @@
   "%~call __<code_stdname><mode>3"
   [(set_attr "adjust_len" "call")])
 
-(define_insn "<code_stdname><mode>3_const_insn"
+(define_insn_and_split "<code_stdname><mode>3_const_insn"
   [(set (reg:ALL8U ACC_A)
         (us_addsub:ALL8U (reg:ALL8U ACC_A)
                          (match_operand:ALL8U 0 "const_operand" "n Ynn")))]
   "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL8U ACC_A)
+                   (us_addsub:ALL8U (reg:ALL8U ACC_A)
+                                    (match_operand:ALL8U 0 "const_operand" "n Ynn")))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code_stdname><mode>3_const_insn"
+  [(set (reg:ALL8U ACC_A)
+        (us_addsub:ALL8U (reg:ALL8U ACC_A)
+                         (match_operand:ALL8U 0 "const_operand" "n Ynn")))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode && reload_completed"
   {
     return avr_out_plus (insn, operands);
   }
-  [(set_attr "adjust_len" "plus")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "plus")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Negation
