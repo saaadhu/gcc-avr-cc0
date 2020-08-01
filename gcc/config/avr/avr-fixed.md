@@ -552,16 +552,32 @@
 
 ;; "*divhq3.call" "*udivuhq3.call"
 ;; "*divha3.call" "*udivuha3.call"
-(define_insn "*<code><mode>3.call"
+(define_insn_and_split "*<code><mode>3.call_split"
   [(set (reg:ALL2QA 24)
         (usdiv:ALL2QA (reg:ALL2QA 26)
                       (reg:ALL2QA 22)))
    (clobber (reg:HI 26))
    (clobber (reg:QI 21))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL2QA 24)
+                   (usdiv:ALL2QA (reg:ALL2QA 26)
+                                 (reg:ALL2QA 22)))
+              (clobber (reg:HI 26))
+              (clobber (reg:QI 21))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code><mode>3.call"
+  [(set (reg:ALL2QA 24)
+        (usdiv:ALL2QA (reg:ALL2QA 26)
+                      (reg:ALL2QA 22)))
+   (clobber (reg:HI 26))
+   (clobber (reg:QI 21))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __<code><mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; Note the first parameter gets passed in already offset by 2 bytes
 
