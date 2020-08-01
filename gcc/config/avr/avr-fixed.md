@@ -759,12 +759,26 @@
 
 ;; "*roundsq3.libgcc"  "*roundusq3.libgcc"
 ;; "*roundsa3.libgcc"  "*roundusa3.libgcc"
-(define_insn "*round<mode>3.libgcc"
+(define_insn_and_split "*round<mode>3.libgcc_split"
   [(set (reg:ALL4QA 22)
         (unspec:ALL4QA [(reg:ALL4QA 18)
                         (reg:QI 24)] UNSPEC_ROUND))
    (clobber (reg:ALL4QA 18))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL4QA 22)
+                   (unspec:ALL4QA [(reg:ALL4QA 18)
+                                   (reg:QI 24)] UNSPEC_ROUND))
+              (clobber (reg:ALL4QA 18))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*round<mode>3.libgcc"
+  [(set (reg:ALL4QA 22)
+        (unspec:ALL4QA [(reg:ALL4QA 18)
+                        (reg:QI 24)] UNSPEC_ROUND))
+   (clobber (reg:ALL4QA 18))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __round<mode>3"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
