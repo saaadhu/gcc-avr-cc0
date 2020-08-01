@@ -236,13 +236,23 @@
 
 ;; "*ssneghq2"  "*ssnegha2"
 ;; "*ssabshq2"  "*ssabsha2"
-(define_insn "*<code_stdname><mode>2"
+(define_insn_and_split "*<code_stdname><mode>2_split"
   [(set (reg:ALL2S 24)
         (ss_abs_neg:ALL2S (reg:ALL2S 24)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL2S 24)
+                   (ss_abs_neg:ALL2S (reg:ALL2S 24)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code_stdname><mode>2"
+  [(set (reg:ALL2S 24)
+        (ss_abs_neg:ALL2S (reg:ALL2S 24)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __<code_stdname>_2"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;; "*ssnegsq2"  "*ssnegsa2"
 ;; "*ssabssq2"  "*ssabssa2"
