@@ -95,14 +95,26 @@
 ;; "adddq3_insn" "addudq3_insn"
 ;; "addda3_insn" "adduda3_insn"
 ;; "addta3_insn" "adduta3_insn"
-(define_insn "add<mode>3_insn"
+(define_insn_and_split "add<mode>3_insn"
   [(set (reg:ALL8 ACC_A)
         (plus:ALL8 (reg:ALL8 ACC_A)
                    (reg:ALL8 ACC_B)))]
   "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL8 ACC_A)
+                   (plus:ALL8 (reg:ALL8 ACC_A)
+                              (reg:ALL8 ACC_B)))
+   (clobber (reg:CC REG_CC))])])
+
+(define_insn "*add<mode>3_insn"
+  [(set (reg:ALL8 ACC_A)
+        (plus:ALL8 (reg:ALL8 ACC_A)
+                   (reg:ALL8 ACC_B)))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode && reload_completed"
   "%~call __adddi3"
-  [(set_attr "adjust_len" "call")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "call")])
 
 (define_insn "adddi3_const8_insn"
   [(set (reg:DI ACC_A)
