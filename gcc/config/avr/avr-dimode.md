@@ -617,14 +617,26 @@
 ;; "ashludq3_insn"  "ashrudq3_insn"  "lshrudq3_insn"  "rotludq3_insn"
 ;; "ashluda3_insn"  "ashruda3_insn"  "lshruda3_insn"  "rotluda3_insn"
 ;; "ashluta3_insn"  "ashruta3_insn"  "lshruta3_insn"  "rotluta3_insn"
-(define_insn "<code_stdname><mode>3_insn"
+(define_insn_and_split "<code_stdname><mode>3_insn"
   [(set (reg:ALL8 ACC_A)
         (di_shifts:ALL8 (reg:ALL8 ACC_A)
                         (reg:QI 16)))]
   "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL8 ACC_A)
+                   (di_shifts:ALL8 (reg:ALL8 ACC_A)
+                                   (reg:QI 16)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code_stdname><mode>3_insn"
+  [(set (reg:ALL8 ACC_A)
+        (di_shifts:ALL8 (reg:ALL8 ACC_A)
+                        (reg:QI 16)))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode && reload_completed"
   "%~call __<code_stdname>di3"
-  [(set_attr "adjust_len" "call")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "call")])
 
 ;; "umulsidi3"
 ;; "mulsidi3"
