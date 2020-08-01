@@ -256,13 +256,23 @@
 
 ;; "*ssnegsq2"  "*ssnegsa2"
 ;; "*ssabssq2"  "*ssabssa2"
-(define_insn "*<code_stdname><mode>2"
+(define_insn_and_split "*<code_stdname><mode>2_split"
   [(set (reg:ALL4S 22)
         (ss_abs_neg:ALL4S (reg:ALL4S 22)))]
   ""
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL4S 22)
+                   (ss_abs_neg:ALL4S (reg:ALL4S 22)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<code_stdname><mode>2"
+  [(set (reg:ALL4S 22)
+        (ss_abs_neg:ALL4S (reg:ALL4S 22)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
   "%~call __<code_stdname>_4"
-  [(set_attr "type" "xcall")
-   (set_attr "cc" "clobber")])
+  [(set_attr "type" "xcall")])
 
 ;******************************************************************************
 ; mul
