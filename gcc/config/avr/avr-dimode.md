@@ -660,7 +660,8 @@
 
 ;; "umulsidi3_insn"
 ;; "mulsidi3_insn"
-(define_insn "<extend_u>mulsidi3_insn"
+
+(define_insn_and_split "<extend_u>mulsidi3_insn"
   [(set (reg:DI ACC_A)
         (mult:DI (any_extend:DI (reg:SI 18))
                  (any_extend:DI (reg:SI 22))))
@@ -668,6 +669,24 @@
    (clobber (reg:HI REG_Z))]
   "avr_have_dimode
    && AVR_HAVE_MUL"
+   "#"
+   "&& reload_completed"
+   [(parallel [(set (reg:DI ACC_A)
+                    (mult:DI (any_extend:DI (reg:SI 18))
+                             (any_extend:DI (reg:SI 22))))
+               (clobber (reg:HI REG_X))
+               (clobber (reg:HI REG_Z))
+               (clobber (reg:CC REG_CC))])])
+
+(define_insn "*<extend_u>mulsidi3_insn"
+  [(set (reg:DI ACC_A)
+        (mult:DI (any_extend:DI (reg:SI 18))
+                 (any_extend:DI (reg:SI 22))))
+   (clobber (reg:HI REG_X))
+   (clobber (reg:HI REG_Z))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode
+   && AVR_HAVE_MUL
+   && reload_completed"
   "%~call __<extend_u>mulsidi3"
-  [(set_attr "adjust_len" "call")
-   (set_attr "cc" "clobber")])
+  [(set_attr "adjust_len" "call")])
