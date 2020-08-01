@@ -56,16 +56,29 @@
    TA UTA
    QI HI SI DI])
 
-(define_insn "fract<FIXED_B:mode><FIXED_A:mode>2"
+(define_insn_and_split "fract<FIXED_B:mode><FIXED_A:mode>2"
   [(set (match_operand:FIXED_A 0 "register_operand" "=r")
         (fract_convert:FIXED_A
          (match_operand:FIXED_B 1 "register_operand" "r")))]
   "<FIXED_B:MODE>mode != <FIXED_A:MODE>mode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (match_dup 0)
+                   (fract_convert:FIXED_A
+                    (match_dup 1)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*fract<FIXED_B:mode><FIXED_A:mode>2"
+  [(set (match_operand:FIXED_A 0 "register_operand" "=r")
+        (fract_convert:FIXED_A
+         (match_operand:FIXED_B 1 "register_operand" "r")))
+   (clobber (reg:CC REG_CC))]
+  "<FIXED_B:MODE>mode != <FIXED_A:MODE>mode
+   && reload_completed"
   {
     return avr_out_fract (insn, operands, true, NULL);
   }
-  [(set_attr "cc" "clobber")
-   (set_attr "adjust_len" "sfract")])
+  [(set_attr "adjust_len" "sfract")])
 
 (define_insn "fractuns<FIXED_B:mode><FIXED_A:mode>2"
   [(set (match_operand:FIXED_A 0 "register_operand" "=r")
