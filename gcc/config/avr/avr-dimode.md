@@ -205,14 +205,26 @@
 ;; "subdq3_insn" "subudq3_insn"
 ;; "subda3_insn" "subuda3_insn"
 ;; "subta3_insn" "subuta3_insn"
-(define_insn "sub<mode>3_insn"
+(define_insn_and_split "sub<mode>3_insn"
   [(set (reg:ALL8 ACC_A)
         (minus:ALL8 (reg:ALL8 ACC_A)
                     (reg:ALL8 ACC_B)))]
   "avr_have_dimode"
+  "#"
+  "&& reload_completed"
+  [(parallel [(set (reg:ALL8 ACC_A)
+                   (minus:ALL8 (reg:ALL8 ACC_A)
+                               (reg:ALL8 ACC_B)))
+              (clobber (reg:CC REG_CC))])])
+
+(define_insn "*sub<mode>3_insn"
+  [(set (reg:ALL8 ACC_A)
+        (minus:ALL8 (reg:ALL8 ACC_A)
+                    (reg:ALL8 ACC_B)))
+   (clobber (reg:CC REG_CC))]
+  "avr_have_dimode && reload_completed"
   "%~call __subdi3"
-  [(set_attr "adjust_len" "call")
-   (set_attr "cc" "set_czn")])
+  [(set_attr "adjust_len" "call")])
 
 ;; "subdi3_const_insn"
 ;; "subdq3_const_insn" "subudq3_const_insn"
