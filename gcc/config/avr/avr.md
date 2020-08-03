@@ -7211,7 +7211,7 @@
 ;;    ".word gs(.L<n>)" addresses for >  8K devices
 (define_insn_and_split "*tablejump_split"
   [(set (pc)
-        (unspec:HI [(match_operand:HI 0 "register_operand" "!z,*r,z")]
+        (unspec:HI [(match_operand:HI 0 "register_operand" "z")]
                    UNSPEC_INDEX_JMP))
    (use (label_ref (match_operand 1 "" "")))
    (clobber (match_dup 0))
