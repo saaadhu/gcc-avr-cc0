@@ -460,7 +460,8 @@
   "reload_completed
    && frame_pointer_needed
    && !cfun->calls_alloca
-   && find_reg_note (insn, REG_ARGS_SIZE, const0_rtx)"
+   && find_reg_note (insn, REG_ARGS_SIZE, const0_rtx)
+   && REGNO (operands[0]) != REG_Y"
   [(set (reg:HI REG_SP)
         (reg:HI REG_Y))])
 
