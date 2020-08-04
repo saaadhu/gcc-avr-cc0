@@ -3685,15 +3685,15 @@
 ;;    CSE has problems to operate on hard regs.
 ;;
 (define_insn_and_split "divmodqi4"
-  [(parallel [(set (match_operand:QI 0 "pseudo_register_operand" "")
-                   (div:QI (match_operand:QI 1 "pseudo_register_operand" "")
-                           (match_operand:QI 2 "pseudo_register_operand" "")))
-              (set (match_operand:QI 3 "pseudo_register_operand" "")
-                   (mod:QI (match_dup 1) (match_dup 2)))
-              (clobber (reg:QI 22))
-              (clobber (reg:QI 23))
-              (clobber (reg:QI 24))
-              (clobber (reg:QI 25))])]
+  [(set (match_operand:QI 0 "pseudo_register_operand" "")
+        (div:QI (match_operand:QI 1 "pseudo_register_operand" "")
+                (match_operand:QI 2 "pseudo_register_operand" "")))
+   (set (match_operand:QI 3 "pseudo_register_operand" "")
+        (mod:QI (match_dup 1) (match_dup 2)))
+   (clobber (reg:QI 22))
+   (clobber (reg:QI 23))
+   (clobber (reg:QI 24))
+   (clobber (reg:QI 25))]
   ""
   "this divmodqi4 pattern should have been splitted;"
   ""
@@ -3731,15 +3731,15 @@
   [(set_attr "type" "xcall")])
 
 (define_insn_and_split "udivmodqi4"
- [(parallel [(set (match_operand:QI 0 "pseudo_register_operand" "")
-                  (udiv:QI (match_operand:QI 1 "pseudo_register_operand" "")
-                           (match_operand:QI 2 "pseudo_register_operand" "")))
-             (set (match_operand:QI 3 "pseudo_register_operand" "")
-                  (umod:QI (match_dup 1) (match_dup 2)))
-             (clobber (reg:QI 22))
-             (clobber (reg:QI 23))
-             (clobber (reg:QI 24))
-             (clobber (reg:QI 25))])]
+ [(set (match_operand:QI 0 "pseudo_register_operand" "")
+       (udiv:QI (match_operand:QI 1 "pseudo_register_operand" "")
+                (match_operand:QI 2 "pseudo_register_operand" "")))
+       (set (match_operand:QI 3 "pseudo_register_operand" "")
+            (umod:QI (match_dup 1) (match_dup 2)))
+       (clobber (reg:QI 22))
+       (clobber (reg:QI 23))
+       (clobber (reg:QI 24))
+       (clobber (reg:QI 25))]
   ""
   "this udivmodqi4 pattern should have been splitted;"
   ""
@@ -3773,15 +3773,15 @@
   [(set_attr "type" "xcall")])
 
 (define_insn_and_split "divmodhi4"
-  [(parallel [(set (match_operand:HI 0 "pseudo_register_operand" "")
-                   (div:HI (match_operand:HI 1 "pseudo_register_operand" "")
-                           (match_operand:HI 2 "pseudo_register_operand" "")))
-              (set (match_operand:HI 3 "pseudo_register_operand" "")
-                   (mod:HI (match_dup 1) (match_dup 2)))
-              (clobber (reg:QI 21))
-              (clobber (reg:HI 22))
-              (clobber (reg:HI 24))
-              (clobber (reg:HI 26))])]
+  [(set (match_operand:HI 0 "pseudo_register_operand" "")
+        (div:HI (match_operand:HI 1 "pseudo_register_operand" "")
+                (match_operand:HI 2 "pseudo_register_operand" "")))
+   (set (match_operand:HI 3 "pseudo_register_operand" "")
+        (mod:HI (match_dup 1) (match_dup 2)))
+   (clobber (reg:QI 21))
+   (clobber (reg:HI 22))
+   (clobber (reg:HI 24))
+   (clobber (reg:HI 26))]
   ""
   "this should have been splitted;"
   ""
@@ -3819,15 +3819,15 @@
   [(set_attr "type" "xcall")])
 
 (define_insn_and_split "udivmodhi4"
-  [(parallel [(set (match_operand:HI 0 "pseudo_register_operand" "")
-                   (udiv:HI (match_operand:HI 1 "pseudo_register_operand" "")
-                            (match_operand:HI 2 "pseudo_register_operand" "")))
-              (set (match_operand:HI 3 "pseudo_register_operand" "")
-                   (umod:HI (match_dup 1) (match_dup 2)))
-              (clobber (reg:QI 21))
-              (clobber (reg:HI 22))
-              (clobber (reg:HI 24))
-              (clobber (reg:HI 26))])]
+  [(set (match_operand:HI 0 "pseudo_register_operand" "")
+        (udiv:HI (match_operand:HI 1 "pseudo_register_operand" "")
+                 (match_operand:HI 2 "pseudo_register_operand" "")))
+   (set (match_operand:HI 3 "pseudo_register_operand" "")
+        (umod:HI (match_dup 1) (match_dup 2)))
+   (clobber (reg:QI 21))
+   (clobber (reg:HI 22))
+   (clobber (reg:HI 24))
+   (clobber (reg:HI 26))]
   ""
   "this udivmodhi4 pattern should have been splitted.;"
   ""
