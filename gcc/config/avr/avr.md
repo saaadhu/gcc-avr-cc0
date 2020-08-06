@@ -7356,16 +7356,13 @@
                    (plus:SI (match_dup 0)
                             (match_operand:SI 1 "const_int_operand")))
               (clobber (scratch:QI))])
-   (parallel [(set (reg:CC REG_CC)
-                   (compare:CC (match_dup 5)
-                            (match_operand:SI 2 "const_int_operand")))
-              (clobber (scratch:QI))])
 
-   (set (pc)
-        (if_then_else (gtu (reg:CC REG_CC)
-                           (const_int 0))
-                      (label_ref (match_operand 4))
-                      (pc)))
+   (parallel [(set (pc)
+                   (if_then_else (gtu (match_dup 5)
+                                      (match_operand:SI 2 "const_int_operand"))
+                                 (label_ref (match_operand 4))
+                                 (pc)))
+             (clobber (scratch:QI))])
 
    (set (match_operand:HI 7 "register_operand")
         (match_operand:HI 6))
@@ -7375,7 +7372,7 @@
               (use (label_ref (match_operand 3)))
               (clobber (match_dup 7))
               (clobber (match_operand:QI 8))])]
-  "reload_completed && optimize
+  "optimize
    && avr_casei_sequence_check_operands (operands)"
   { gcc_unreachable(); }
   )
