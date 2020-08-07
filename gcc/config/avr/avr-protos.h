@@ -59,21 +59,21 @@ extern const char *avr_out_movpsi (rtx_insn *, rtx*, int*);
 extern const char *avr_out_sign_extend (rtx_insn *, rtx*, int*);
 extern const char *avr_out_insert_notbit (rtx_insn *, rtx*, rtx, int*);
 
-extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int *len);
-extern const char *ashlhi3_out (rtx_insn *insn, rtx operands[], int *len);
-extern const char *ashlsi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
+extern const char *ashlhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
+extern const char *ashlsi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
 
-extern const char *ashrqi3_out (rtx_insn *insn, rtx operands[], int *len);
-extern const char *ashrhi3_out (rtx_insn *insn, rtx operands[], int *len);
-extern const char *ashrsi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *ashrqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
+extern const char *ashrhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
+extern const char *ashrsi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
 
-extern const char *lshrqi3_out (rtx_insn *insn, rtx operands[], int *len);
-extern const char *lshrhi3_out (rtx_insn *insn, rtx operands[], int *len);
-extern const char *lshrsi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *lshrqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
+extern const char *lshrhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
+extern const char *lshrsi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
 
-extern const char *avr_out_ashlpsi3 (rtx_insn *, rtx*, int*);
-extern const char *avr_out_ashrpsi3 (rtx_insn *, rtx*, int*);
-extern const char *avr_out_lshrpsi3 (rtx_insn *, rtx*, int*);
+extern const char *avr_out_ashlpsi3 (rtx_insn *, rtx*, int, int*);
+extern const char *avr_out_ashrpsi3 (rtx_insn *, rtx*, int, int*);
+extern const char *avr_out_lshrpsi3 (rtx_insn *, rtx*, int, int*);
 
 extern bool avr_rotate_bytes (rtx operands[]);
 
@@ -116,7 +116,7 @@ extern int avr_simplify_comparison_p (machine_mode mode,
 				      RTX_CODE op, rtx x);
 extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
 extern void out_shift_with_cnt (const char *templ, rtx_insn *insn,
-				rtx operands[], int *len, int t_len);
+				rtx operands[], int numops, int *len, int t_len);
 extern enum reg_class avr_mode_code_base_reg_class (machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
 extern bool avr_regno_mode_code_ok_for_base_p (int, machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
 extern rtx avr_incoming_return_addr_rtx (void);
