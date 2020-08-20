@@ -389,10 +389,10 @@
 ;; "compare_da2" "compare_uda2"
 ;; "compare_ta2" "compare_uta2"
 (define_insn "compare_<mode>2"
-  [(set (cc0)
-        (compare (reg:ALL8 ACC_A)
-                 (reg:ALL8 ACC_B)))]
-  "avr_have_dimode"
+  [(set (reg:CC REG_CC)
+        (compare:CC (reg:ALL8 ACC_A)
+                    (reg:ALL8 ACC_B)))]
+  "reload_completed && avr_have_dimode"
   "%~call __cmpdi2"
   [(set_attr "adjust_len" "call")
    (set_attr "cc" "compare")])
@@ -416,10 +416,10 @@
   })
 
 (define_insn "compare_const8_di2"
-  [(set (cc0)
-        (compare (reg:DI ACC_A)
-                 (sign_extend:DI (reg:QI REG_X))))]
-  "avr_have_dimode"
+  [(set (reg:CC REG_CC)
+        (compare:CC (reg:DI ACC_A)
+                    (sign_extend:DI (reg:QI REG_X))))]
+  "reload_completed && avr_have_dimode"
   "%~call __cmpdi2_s8"
   [(set_attr "adjust_len" "call")
    (set_attr "cc" "compare")])
@@ -450,11 +450,12 @@
 ;; "compare_const_da2" "compare_const_uda2"
 ;; "compare_const_ta2" "compare_const_uta2"
 (define_insn "compare_const_<mode>2"
-  [(set (cc0)
-        (compare (reg:ALL8 ACC_A)
-                 (match_operand:ALL8 0 "const_operand" "n Ynn")))
-   (clobber (match_scratch:QI 1 "=&d"))]
-  "avr_have_dimode
+  [(set (reg:CC REG_CC)
+        (compare:CC (reg:ALL8 ACC_A)
+                    (match_operand:ALL8 0 "const_operand" "n Ynn")))
+   (clobber (match_operand:QI 1 "register_operand" "=&d"))]
+  "reload_completed
+   && avr_have_dimode
    && !s8_operand (operands[0], VOIDmode)"
   {
     return avr_out_compare64 (insn, operands, NULL);
