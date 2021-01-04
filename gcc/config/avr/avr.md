@@ -5047,7 +5047,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return ashlqi3_out (insn, operands, 3, NULL);
+    return ashlqi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "5,0,1,2,4,6,9")
    (set_attr "adjust_len" "ashlqi")])
@@ -5071,7 +5071,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return ashlhi3_out (insn, operands, 3, NULL);
+    return ashlhi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "6,0,2,2,4,10,10")
    (set_attr "adjust_len" "ashlhi")])
@@ -5179,7 +5179,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return ashlsi3_out (insn, operands, 3, NULL);
+    return ashlsi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "8,0,4,4,8,10,12")
    (set_attr "adjust_len" "ashlsi")])
@@ -5263,7 +5263,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return ashlhi3_out (insn, operands, 4, NULL);
+    return ashlhi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "0,2,2,4,10")
    (set_attr "adjust_len" "ashlhi")])
@@ -5304,7 +5304,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return ashlsi3_out (insn, operands, 4, NULL);
+    return ashlsi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "0,4,4,10")
    (set_attr "adjust_len" "ashlsi")])
@@ -5358,7 +5358,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return avr_out_ashlpsi3 (insn, operands, 4, NULL);
+    return avr_out_ashlpsi3 (insn, operands, NULL);
   }
   [(set_attr "adjust_len" "ashlpsi")])
 
@@ -5386,7 +5386,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return ashrqi3_out (insn, operands, 3, NULL);
+    return ashrqi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "5,0,1,2,5,4,9")
    (set_attr "adjust_len" "ashrqi")])
@@ -5413,7 +5413,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return ashrhi3_out (insn, operands, 2, NULL);
+    return ashrhi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "6,0,2,4,4,10,10")
    (set_attr "adjust_len" "ashrhi")])
@@ -5440,7 +5440,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return avr_out_ashrpsi3 (insn, operands, 4, NULL);
+    return avr_out_ashrpsi3 (insn, operands, NULL);
   }
   [(set_attr "adjust_len" "ashrpsi")])
 
@@ -5466,7 +5466,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return ashrsi3_out (insn, operands, 3, NULL);
+    return ashrsi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "8,0,4,6,8,10,12")
    (set_attr "adjust_len" "ashrsi")])
@@ -5509,7 +5509,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return ashrhi3_out (insn, operands, 3, NULL);
+    return ashrhi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "0,2,4,4,10")
    (set_attr "adjust_len" "ashrhi")])
@@ -5550,7 +5550,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return ashrsi3_out (insn, operands, 4, NULL);
+    return ashrsi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "0,4,4,10")
    (set_attr "adjust_len" "ashrsi")])
@@ -5626,7 +5626,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return lshrqi3_out (insn, operands, 3, NULL);
+    return lshrqi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "5,0,1,2,4,6,9")
    (set_attr "adjust_len" "lshrqi")])
@@ -5653,7 +5653,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return lshrhi3_out (insn, operands, 3, NULL);
+    return lshrhi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "6,0,2,2,4,10,10")
    (set_attr "adjust_len" "lshrhi")])
@@ -5680,7 +5680,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return avr_out_lshrpsi3 (insn, operands, 4, NULL);
+    return avr_out_lshrpsi3 (insn, operands, NULL);
   }
   [(set_attr "adjust_len" "lshrpsi")])
 
@@ -5706,7 +5706,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return lshrsi3_out (insn, operands, 3, NULL);
+    return lshrsi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "8,0,4,4,8,10,12")
    (set_attr "adjust_len" "lshrsi")])
@@ -5790,7 +5790,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return lshrhi3_out (insn, operands, 4, NULL);
+    return lshrhi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "0,2,2,4,10")
    (set_attr "adjust_len" "lshrhi")])
@@ -5831,7 +5831,7 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
-    return lshrsi3_out (insn, operands, 4, NULL);
+    return lshrsi3_out (insn, operands, NULL);
   }
   [(set_attr "length" "0,4,4,10")
    (set_attr "adjust_len" "lshrsi")])

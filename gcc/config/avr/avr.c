@@ -195,7 +195,7 @@ rtx tmp_reg_rtx;
 extern GTY(()) rtx zero_reg_rtx;
 rtx zero_reg_rtx;
 
-/* Condition Codoe register RTX (reg:CC REG_CC) */
+/* Condition Code register RTX (reg:CC REG_CC) */
 extern GTY(()) rtx cc_reg_rtx;
 rtx cc_reg_rtx;
 
@@ -5686,7 +5686,7 @@ compare_condition (rtx_insn *insn)
     {
       rtx pat = PATTERN (next);
       if (GET_CODE(pat) == PARALLEL)
-        pat = XEXP (pat, 0);
+        pat = XVECEXP (pat, 0, 0);
       rtx src = SET_SRC (pat);
 
       if (IF_THEN_ELSE == GET_CODE (src))
@@ -6024,13 +6024,12 @@ avr_out_tstsi (rtx_insn *insn, rtx *op, int *plen)
    OPERANDS[3] is a QImode scratch register from LD regs if
                available and SCRATCH, otherwise (no scratch available)
 
-   NUMOPS is the number of operands
    TEMPL is an assembler template that shifts by one position.
    T_LEN is the length of this template.  */
 
 void
 out_shift_with_cnt (const char *templ, rtx_insn *insn, rtx operands[],
-		    int numops, int *plen, int t_len)
+		    int *plen, int t_len)
 {
   bool second_label = true;
   bool saved_in_tmp = false;
@@ -6047,8 +6046,13 @@ out_shift_with_cnt (const char *templ, rtx_insn *insn, rtx operands[],
 
   if (CONST_INT_P (operands[2]))
     {
+	  /* Operand 3 is a scratch register if this is a
+         parallel with three elements i.e. a set,
+         a clobber of a scratch, and clobber of REG_CC.
+         If a scratch reg is not available, then the parallel
+         will contain only a set and clobber of REG_CC. */
       bool scratch = (GET_CODE (PATTERN (insn)) == PARALLEL
-                      && numops == 4
+                      && XVECLEN (PATTERN (insn), 0) == 3
                       && REG_P (operands[3]));
       int count = INTVAL (operands[2]);
       int max_len = 10;  /* If larger than this, always use a loop.  */
@@ -6144,7 +6148,7 @@ out_shift_with_cnt (const char *templ, rtx_insn *insn, rtx operands[],
 /* 8bit shift left ((char)x << i)   */
 
 const char *
-ashlqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
+ashlqi3_out (rtx_insn *insn, rtx operands[], int *len)
 {
   if (CONST_INT_P (operands[2]))
     {
@@ -6233,7 +6237,7 @@ ashlqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
     fatal_insn ("internal compiler error.  Incorrect shift:", insn);
 
   out_shift_with_cnt ("lsl %0",
-                      insn, operands, numops, len, 1);
+                      insn, operands, len, 1);
   return "";
 }
 
@@ -6241,12 +6245,12 @@ ashlqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
 /* 16bit shift left ((short)x << i)   */
 
 const char *
-ashlhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
+ashlhi3_out (rtx_insn *insn, rtx operands[], int *len)
 {
   if (CONST_INT_P (operands[2]))
     {
       int scratch = (GET_CODE (PATTERN (insn)) == PARALLEL
-                     && numops == 4);
+                     && XVECLEN (PATTERN (insn), 0) == 3);
       int ldi_ok = test_hard_reg_class (LD_REGS, operands[0]);
       int k;
       int *t = len;
@@ -6491,7 +6495,7 @@ ashlhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
       len = t;
     }
   out_shift_with_cnt ("lsl %A0" CR_TAB
-                      "rol %B0", insn, operands, numops, len, 2);
+                      "rol %B0", insn, operands, len, 2);
   return "";
 }
 
@@ -6499,7 +6503,7 @@ ashlhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
 /* 24-bit shift left */
 
 const char*
-avr_out_ashlpsi3 (rtx_insn *insn, rtx *op, int numops, int *plen)
+avr_out_ashlpsi3 (rtx_insn *insn, rtx *op, int *plen)
 {
   if (plen)
     *plen = 0;
@@ -6554,7 +6558,7 @@ avr_out_ashlpsi3 (rtx_insn *insn, rtx *op, int numops, int *plen)
 
   out_shift_with_cnt ("lsl %A0" CR_TAB
                       "rol %B0" CR_TAB
-                      "rol %C0", insn, op, numops, plen, 3);
+                      "rol %C0", insn, op, plen, 3);
   return "";
 }
 
@@ -6562,7 +6566,7 @@ avr_out_ashlpsi3 (rtx_insn *insn, rtx *op, int numops, int *plen)
 /* 32bit shift left ((long)x << i)   */
 
 const char *
-ashlsi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
+ashlsi3_out (rtx_insn *insn, rtx operands[], int *len)
 {
   if (CONST_INT_P (operands[2]))
     {
@@ -6644,14 +6648,14 @@ ashlsi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
   out_shift_with_cnt ("lsl %A0" CR_TAB
                       "rol %B0" CR_TAB
                       "rol %C0" CR_TAB
-                      "rol %D0", insn, operands, numops, len, 4);
+                      "rol %D0", insn, operands, len, 4);
   return "";
 }
 
 /* 8bit arithmetic shift right  ((signed char)x >> i) */
 
 const char *
-ashrqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
+ashrqi3_out (rtx_insn *insn, rtx operands[], int *len)
 {
   if (CONST_INT_P (operands[2]))
     {
@@ -6715,7 +6719,7 @@ ashrqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
     fatal_insn ("internal compiler error.  Incorrect shift:", insn);
 
   out_shift_with_cnt ("asr %0",
-                      insn, operands, numops, len, 1);
+                      insn, operands, len, 1);
   return "";
 }
 
@@ -6723,12 +6727,12 @@ ashrqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
 /* 16bit arithmetic shift right  ((signed short)x >> i) */
 
 const char *
-ashrhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
+ashrhi3_out (rtx_insn *insn, rtx operands[], int *len)
 {
   if (CONST_INT_P (operands[2]))
     {
       int scratch = (GET_CODE (PATTERN (insn)) == PARALLEL
-                     && numops == 4);
+                     && XVECLEN (PATTERN (insn), 0) == 3);
       int ldi_ok = test_hard_reg_class (LD_REGS, operands[0]);
       int k;
       int *t = len;
@@ -6879,7 +6883,7 @@ ashrhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
       len = t;
     }
   out_shift_with_cnt ("asr %B0" CR_TAB
-                      "ror %A0", insn, operands, numops, len, 2);
+                      "ror %A0", insn, operands, len, 2);
   return "";
 }
 
@@ -6887,7 +6891,7 @@ ashrhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
 /* 24-bit arithmetic shift right */
 
 const char*
-avr_out_ashrpsi3 (rtx_insn *insn, rtx *op, int numops, int *plen)
+avr_out_ashrpsi3 (rtx_insn *insn, rtx *op, int *plen)
 {
   int dest = REGNO (op[0]);
   int src = REGNO (op[1]);
@@ -6938,7 +6942,7 @@ avr_out_ashrpsi3 (rtx_insn *insn, rtx *op, int numops, int *plen)
 
   out_shift_with_cnt ("asr %C0" CR_TAB
                       "ror %B0" CR_TAB
-                      "ror %A0", insn, op, numops, plen, 3);
+                      "ror %A0", insn, op, plen, 3);
   return "";
 }
 
@@ -6946,7 +6950,7 @@ avr_out_ashrpsi3 (rtx_insn *insn, rtx *op, int numops, int *plen)
 /* 32-bit arithmetic shift right  ((signed long)x >> i) */
 
 const char *
-ashrsi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
+ashrsi3_out (rtx_insn *insn, rtx operands[], int *len)
 {
   if (CONST_INT_P (operands[2]))
     {
@@ -7036,14 +7040,14 @@ ashrsi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
   out_shift_with_cnt ("asr %D0" CR_TAB
                       "ror %C0" CR_TAB
                       "ror %B0" CR_TAB
-                      "ror %A0", insn, operands, numops, len, 4);
+                      "ror %A0", insn, operands, len, 4);
   return "";
 }
 
 /* 8-bit logic shift right ((unsigned char)x >> i) */
 
 const char *
-lshrqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
+lshrqi3_out (rtx_insn *insn, rtx operands[], int *len)
 {
   if (CONST_INT_P (operands[2]))
     {
@@ -7131,19 +7135,19 @@ lshrqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
     fatal_insn ("internal compiler error.  Incorrect shift:", insn);
 
   out_shift_with_cnt ("lsr %0",
-                      insn, operands, numops, len, 1);
+                      insn, operands, len, 1);
   return "";
 }
 
 /* 16-bit logic shift right ((unsigned short)x >> i) */
 
 const char *
-lshrhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
+lshrhi3_out (rtx_insn *insn, rtx operands[], int *len)
 {
   if (CONST_INT_P (operands[2]))
     {
       int scratch = (GET_CODE (PATTERN (insn)) == PARALLEL
-                     && numops == 4);
+                     && XVECLEN (PATTERN (insn), 0) == 3);
       int ldi_ok = test_hard_reg_class (LD_REGS, operands[0]);
       int k;
       int *t = len;
@@ -7388,7 +7392,7 @@ lshrhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
       len = t;
     }
   out_shift_with_cnt ("lsr %B0" CR_TAB
-                      "ror %A0", insn, operands, numops, len, 2);
+                      "ror %A0", insn, operands, len, 2);
   return "";
 }
 
@@ -7396,7 +7400,7 @@ lshrhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
 /* 24-bit logic shift right */
 
 const char*
-avr_out_lshrpsi3 (rtx_insn *insn, rtx *op, int numops, int *plen)
+avr_out_lshrpsi3 (rtx_insn *insn, rtx *op, int *plen)
 {
   int dest = REGNO (op[0]);
   int src = REGNO (op[1]);
@@ -7442,7 +7446,7 @@ avr_out_lshrpsi3 (rtx_insn *insn, rtx *op, int numops, int *plen)
 
   out_shift_with_cnt ("lsr %C0" CR_TAB
                       "ror %B0" CR_TAB
-                      "ror %A0", insn, op, numops, plen, 3);
+                      "ror %A0", insn, op, plen, 3);
   return "";
 }
 
@@ -7450,7 +7454,7 @@ avr_out_lshrpsi3 (rtx_insn *insn, rtx *op, int numops, int *plen)
 /* 32-bit logic shift right ((unsigned int)x >> i) */
 
 const char *
-lshrsi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
+lshrsi3_out (rtx_insn *insn, rtx operands[], int *len)
 {
   if (CONST_INT_P (operands[2]))
     {
@@ -7532,7 +7536,7 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int numops, int *len)
   out_shift_with_cnt ("lsr %D0" CR_TAB
                       "ror %C0" CR_TAB
                       "ror %B0" CR_TAB
-                      "ror %A0", insn, operands, numops, len, 4);
+                      "ror %A0", insn, operands, len, 4);
   return "";
 }
 
@@ -9218,7 +9222,6 @@ int
 avr_adjust_insn_length (rtx_insn *insn, int len)
 {
   rtx *op = recog_data.operand;
-  int numops = recog_data.n_operands;
   enum attr_adjust_len adjust_len;
 
   /* As we pretend jump tables in .text, fix branch offsets crossing jump
@@ -9284,21 +9287,21 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_COMPARE: avr_out_compare (insn, op, &len); break;
     case ADJUST_LEN_COMPARE64: avr_out_compare64 (insn, op, &len); break;
 
-    case ADJUST_LEN_LSHRQI: lshrqi3_out (insn, op, numops, &len); break;
-    case ADJUST_LEN_LSHRHI: lshrhi3_out (insn, op, numops, &len); break;
-    case ADJUST_LEN_LSHRSI: lshrsi3_out (insn, op, numops, &len); break;
+    case ADJUST_LEN_LSHRQI: lshrqi3_out (insn, op, &len); break;
+    case ADJUST_LEN_LSHRHI: lshrhi3_out (insn, op, &len); break;
+    case ADJUST_LEN_LSHRSI: lshrsi3_out (insn, op, &len); break;
 
-    case ADJUST_LEN_ASHRQI: ashrqi3_out (insn, op, numops, &len); break;
-    case ADJUST_LEN_ASHRHI: ashrhi3_out (insn, op, numops, &len); break;
-    case ADJUST_LEN_ASHRSI: ashrsi3_out (insn, op, numops,  &len); break;
+    case ADJUST_LEN_ASHRQI: ashrqi3_out (insn, op, &len); break;
+    case ADJUST_LEN_ASHRHI: ashrhi3_out (insn, op, &len); break;
+    case ADJUST_LEN_ASHRSI: ashrsi3_out (insn, op,  &len); break;
 
-    case ADJUST_LEN_ASHLQI: ashlqi3_out (insn, op, numops, &len); break;
-    case ADJUST_LEN_ASHLHI: ashlhi3_out (insn, op, numops, &len); break;
-    case ADJUST_LEN_ASHLSI: ashlsi3_out (insn, op, numops, &len); break;
+    case ADJUST_LEN_ASHLQI: ashlqi3_out (insn, op, &len); break;
+    case ADJUST_LEN_ASHLHI: ashlhi3_out (insn, op, &len); break;
+    case ADJUST_LEN_ASHLSI: ashlsi3_out (insn, op, &len); break;
 
-    case ADJUST_LEN_ASHLPSI: avr_out_ashlpsi3 (insn, op, numops, &len); break;
-    case ADJUST_LEN_ASHRPSI: avr_out_ashrpsi3 (insn, op, numops, &len); break;
-    case ADJUST_LEN_LSHRPSI: avr_out_lshrpsi3 (insn, op, numops, &len); break;
+    case ADJUST_LEN_ASHLPSI: avr_out_ashlpsi3 (insn, op, &len); break;
+    case ADJUST_LEN_ASHRPSI: avr_out_ashrpsi3 (insn, op, &len); break;
+    case ADJUST_LEN_LSHRPSI: avr_out_lshrpsi3 (insn, op, &len); break;
 
     case ADJUST_LEN_CALL: len = AVR_HAVE_JMP_CALL ? 2 : 1; break;
 

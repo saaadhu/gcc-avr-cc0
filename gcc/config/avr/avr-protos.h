@@ -59,21 +59,21 @@ extern const char *avr_out_movpsi (rtx_insn *, rtx*, int*);
 extern const char *avr_out_sign_extend (rtx_insn *, rtx*, int*);
 extern const char *avr_out_insert_notbit (rtx_insn *, rtx*, rtx, int*);
 
-extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
-extern const char *ashlhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
-extern const char *ashlsi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
+extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *ashlhi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *ashlsi3_out (rtx_insn *insn, rtx operands[], int *len);
 
-extern const char *ashrqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
-extern const char *ashrhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
-extern const char *ashrsi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
+extern const char *ashrqi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *ashrhi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *ashrsi3_out (rtx_insn *insn, rtx operands[], int *len);
 
-extern const char *lshrqi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
-extern const char *lshrhi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
-extern const char *lshrsi3_out (rtx_insn *insn, rtx operands[], int numops, int *len);
+extern const char *lshrqi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *lshrhi3_out (rtx_insn *insn, rtx operands[], int *len);
+extern const char *lshrsi3_out (rtx_insn *insn, rtx operands[], int *len);
 
-extern const char *avr_out_ashlpsi3 (rtx_insn *, rtx*, int, int*);
-extern const char *avr_out_ashrpsi3 (rtx_insn *, rtx*, int, int*);
-extern const char *avr_out_lshrpsi3 (rtx_insn *, rtx*, int, int*);
+extern const char *avr_out_ashlpsi3 (rtx_insn *, rtx*, int*);
+extern const char *avr_out_ashrpsi3 (rtx_insn *, rtx*, int*);
+extern const char *avr_out_lshrpsi3 (rtx_insn *, rtx*, int*);
 
 extern bool avr_rotate_bytes (rtx operands[]);
 
