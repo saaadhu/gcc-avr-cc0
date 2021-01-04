@@ -456,13 +456,15 @@
 ;; zero REG_ARGS_SIZE.  This is equivalent to a move from FP.
 (define_split
   [(set (reg:HI REG_SP)
-        (match_operand:HI 0 "register_operand" ""))]
+        (match_operand:HI 0 "register_operand" ""))
+   (clobber (reg:CC REG_CC))]
   "reload_completed
    && frame_pointer_needed
    && !cfun->calls_alloca
    && find_reg_note (insn, REG_ARGS_SIZE, const0_rtx)"
-  [(set (reg:HI REG_SP)
-        (reg:HI REG_Y))])
+  [(parallel [(set (reg:HI REG_SP)
+                   (reg:HI REG_Y))
+              (clobber (reg:CC REG_CC))])])
 
 ;;========================================================================
 ;; Move stuff around
@@ -591,7 +593,8 @@
 (define_insn "xload<mode>_8"
   [(set (match_operand:ALL1 0 "register_operand"                   "=&r,r")
         (mem:ALL1 (lo_sum:PSI (match_operand:QI 1 "register_operand" "r,r")
-                              (reg:HI REG_Z))))]
+                              (reg:HI REG_Z))))
+   (clobber (reg:CC REG_CC))]
   "!avr_xload_libgcc_p (<MODE>mode)"
   {
     return avr_out_xload (insn, operands, NULL);
@@ -726,7 +729,8 @@
 (define_insn "*reload_in<mode>"
   [(set (match_operand:ALL1 0 "register_operand"    "=l")
         (match_operand:ALL1 1 "const_operand"        "i"))
-   (clobber (match_operand:QI 2 "register_operand" "=&d"))]
+   (clobber (match_operand:QI 2 "register_operand" "=&d"))
+   (clobber (reg:CC REG_CC))]
   "reload_completed"
   "ldi %2,lo8(%1)
 	mov %0,%2"
@@ -855,14 +859,17 @@
 
 (define_split ; "split-lpmx"
   [(set (match_operand:HISI 0 "register_operand" "")
-        (match_operand:HISI 1 "memory_operand" ""))]
+        (match_operand:HISI 1 "memory_operand" ""))
+   (clobber (reg:CC REG_CC))]
   "reload_completed
    && AVR_HAVE_LPMX"
-  [(set (match_dup 0)
-        (match_dup 2))
-   (set (match_dup 3)
-        (plus:HI (match_dup 3)
-                 (match_dup 4)))]
+  [(parallel [(set (match_dup 0)
+                   (match_dup 2))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_dup 3)
+                   (plus:HI (match_dup 3)
+                            (match_dup 4)))
+              (clobber (reg:CC REG_CC))])]
   {
      rtx addr = XEXP (operands[1], 0);
 
@@ -2886,16 +2893,16 @@
 ;;    CSE has problems to operate on hard regs.
 ;;
 (define_insn_and_split "divmodqi4"
-  [(parallel [(set (match_operand:QI 0 "pseudo_register_operand" "")
-                   (div:QI (match_operand:QI 1 "pseudo_register_operand" "")
-                           (match_operand:QI 2 "pseudo_register_operand" "")))
-              (set (match_operand:QI 3 "pseudo_register_operand" "")
-                   (mod:QI (match_dup 1) (match_dup 2)))
-              (clobber (reg:QI 22))
-              (clobber (reg:QI 23))
-              (clobber (reg:QI 24))
-              (clobber (reg:QI 25))
-              (clobber (reg:CC REG_CC))])]
+  [(set (match_operand:QI 0 "pseudo_register_operand" "")
+        (div:QI (match_operand:QI 1 "pseudo_register_operand" "")
+                (match_operand:QI 2 "pseudo_register_operand" "")))
+   (set (match_operand:QI 3 "pseudo_register_operand" "")
+        (mod:QI (match_dup 1) (match_dup 2)))
+   (clobber (reg:QI 22))
+   (clobber (reg:QI 23))
+   (clobber (reg:QI 24))
+   (clobber (reg:QI 25))
+   (clobber (reg:CC REG_CC))]
   ""
   "this divmodqi4 pattern should have been splitted;"
   ""
@@ -2925,16 +2932,16 @@
    (set_attr "cc" "clobber")])
 
 (define_insn_and_split "udivmodqi4"
- [(parallel [(set (match_operand:QI 0 "pseudo_register_operand" "")
-                  (udiv:QI (match_operand:QI 1 "pseudo_register_operand" "")
-                           (match_operand:QI 2 "pseudo_register_operand" "")))
-             (set (match_operand:QI 3 "pseudo_register_operand" "")
-                  (umod:QI (match_dup 1) (match_dup 2)))
-             (clobber (reg:QI 22))
-             (clobber (reg:QI 23))
-             (clobber (reg:QI 24))
-             (clobber (reg:QI 25))
-             (clobber (reg:CC REG_CC))])]
+ [(set (match_operand:QI 0 "pseudo_register_operand" "")
+       (udiv:QI (match_operand:QI 1 "pseudo_register_operand" "")
+                (match_operand:QI 2 "pseudo_register_operand" "")))
+  (set (match_operand:QI 3 "pseudo_register_operand" "")
+       (umod:QI (match_dup 1) (match_dup 2)))
+  (clobber (reg:QI 22))
+  (clobber (reg:QI 23))
+  (clobber (reg:QI 24))
+  (clobber (reg:QI 25))
+  (clobber (reg:CC REG_CC))]
   ""
   "this udivmodqi4 pattern should have been splitted;"
   ""
@@ -2962,16 +2969,16 @@
    (set_attr "cc" "clobber")])
 
 (define_insn_and_split "divmodhi4"
-  [(parallel [(set (match_operand:HI 0 "pseudo_register_operand" "")
-                   (div:HI (match_operand:HI 1 "pseudo_register_operand" "")
-                           (match_operand:HI 2 "pseudo_register_operand" "")))
-              (set (match_operand:HI 3 "pseudo_register_operand" "")
-                   (mod:HI (match_dup 1) (match_dup 2)))
-              (clobber (reg:QI 21))
-              (clobber (reg:HI 22))
-              (clobber (reg:HI 24))
-              (clobber (reg:HI 26))
-              (clobber (reg:CC REG_CC))])]
+  [(set (match_operand:HI 0 "pseudo_register_operand" "")
+        (div:HI (match_operand:HI 1 "pseudo_register_operand" "")
+                (match_operand:HI 2 "pseudo_register_operand" "")))
+   (set (match_operand:HI 3 "pseudo_register_operand" "")
+        (mod:HI (match_dup 1) (match_dup 2)))
+   (clobber (reg:QI 21))
+   (clobber (reg:HI 22))
+   (clobber (reg:HI 24))
+   (clobber (reg:HI 26))
+   (clobber (reg:CC REG_CC))]
   ""
   "this should have been splitted;"
   ""
@@ -3001,16 +3008,16 @@
    (set_attr "cc" "clobber")])
 
 (define_insn_and_split "udivmodhi4"
-  [(parallel [(set (match_operand:HI 0 "pseudo_register_operand" "")
-                   (udiv:HI (match_operand:HI 1 "pseudo_register_operand" "")
-                            (match_operand:HI 2 "pseudo_register_operand" "")))
-              (set (match_operand:HI 3 "pseudo_register_operand" "")
-                   (umod:HI (match_dup 1) (match_dup 2)))
-              (clobber (reg:QI 21))
-              (clobber (reg:HI 22))
-              (clobber (reg:HI 24))
-              (clobber (reg:HI 26))
-              (clobber (reg:CC REG_CC))])]
+  [(set (match_operand:HI 0 "pseudo_register_operand" "")
+        (udiv:HI (match_operand:HI 1 "pseudo_register_operand" "")
+                 (match_operand:HI 2 "pseudo_register_operand" "")))
+   (set (match_operand:HI 3 "pseudo_register_operand" "")
+        (umod:HI (match_dup 1) (match_dup 2)))
+   (clobber (reg:QI 21))
+   (clobber (reg:HI 22))
+   (clobber (reg:HI 24))
+   (clobber (reg:HI 26))
+   (clobber (reg:CC REG_CC))]
   ""
   "this udivmodhi4 pattern should have been splitted.;"
   ""
@@ -3327,7 +3334,7 @@
    (set_attr "cc" "clobber")])
 
 (define_insn_and_split "udivmodsi4"
-  [(parallel [(set (match_operand:SI 0 "pseudo_register_operand" "")
+  [(set (match_operand:SI 0 "pseudo_register_operand" "")
                    (udiv:SI (match_operand:SI 1 "pseudo_register_operand" "")
                            (match_operand:SI 2 "pseudo_register_operand" "")))
               (set (match_operand:SI 3 "pseudo_register_operand" "")
@@ -3336,7 +3343,7 @@
               (clobber (reg:SI 22))
               (clobber (reg:HI 26))
               (clobber (reg:HI 30))
-              (clobber (reg:CC REG_CC))])]
+              (clobber (reg:CC REG_CC))]
   ""
   "this udivmodsi4 pattern should have been splitted;"
   ""
@@ -3598,11 +3605,14 @@
 
 (define_split
   [(set (match_operand:SPLIT34 0 "register_operand")
-        (match_operand:SPLIT34 1 "register_operand"))]
+        (match_operand:SPLIT34 1 "register_operand"))
+   (clobber (reg:CC REG_CC))] 
   "optimize
    && reload_completed"
-  [(set (match_dup 2) (match_dup 3))
-   (set (match_dup 4) (match_dup 5))]
+  [(parallel [(set (match_dup 2) (match_dup 3))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_dup 4) (match_dup 5))
+              (clobber (reg:CC REG_CC))])]
   {
     machine_mode mode_hi = 4 == GET_MODE_SIZE (<MODE>mode) ? HImode : QImode;
     bool lo_first = REGNO (operands[0]) < REGNO (operands[1]);
@@ -3619,15 +3629,18 @@
   
 (define_split
   [(set (match_operand:HI 0 "register_operand")
-        (match_operand:HI 1 "reg_or_0_operand"))]
+        (match_operand:HI 1 "reg_or_0_operand"))
+   (clobber (reg:CC REG_CC))]
   "optimize
    && reload_completed
    && GENERAL_REG_P (operands[0])
    && (operands[1] == const0_rtx || GENERAL_REG_P (operands[1]))
    && (!AVR_HAVE_MOVW
        || const0_rtx == operands[1])"
-  [(set (match_dup 2) (match_dup 3))
-   (set (match_dup 4) (match_dup 5))]
+  [(parallel [(set (match_dup 2) (match_dup 3))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_dup 4) (match_dup 5))
+              (clobber (reg:CC REG_CC))])]
   {
     operands[2] = simplify_gen_subreg (QImode, operands[0], HImode, 1);
     operands[3] = simplify_gen_subreg (QImode, operands[1], HImode, 1);
@@ -3642,7 +3655,8 @@
   [(parallel [(set (match_operand:HISI 0 "register_operand")
                    (bitop:HISI (match_dup 0)
                                (match_operand:HISI 1 "register_operand")))
-              (clobber (scratch:QI))])]
+              (clobber (scratch:QI))
+              (clobber (reg:CC REG_CC))])]
   "optimize
    && reload_completed"
   [(const_int 1)]
@@ -5829,7 +5843,8 @@
 (define_insn "*cbi"
   [(set (mem:QI (match_operand 0 "low_io_address_operand" "i"))
         (and:QI (mem:QI (match_dup 0))
-                (match_operand:QI 1 "single_zero_operand" "n")))]
+                (match_operand:QI 1 "single_zero_operand" "n")))
+   (clobber (reg:CC REG_CC))]
   ""
   {
     operands[2] = GEN_INT (exact_log2 (~INTVAL (operands[1]) & 0xff));
@@ -5841,7 +5856,8 @@
 (define_insn "*sbi"
   [(set (mem:QI (match_operand 0 "low_io_address_operand" "i"))
         (ior:QI (mem:QI (match_dup 0))
-                (match_operand:QI 1 "single_one_operand" "n")))]
+                (match_operand:QI 1 "single_one_operand" "n")))
+   (clobber (reg:CC REG_CC))]
   ""
   {
     operands[2] = GEN_INT (exact_log2 (INTVAL (operands[1]) & 0xff));
@@ -6214,7 +6230,8 @@
 
 (define_insn "popqi"
   [(set (match_operand:QI 0 "register_operand" "=r")
-        (mem:QI (pre_inc:HI (reg:HI REG_SP))))]
+        (mem:QI (pre_inc:HI (reg:HI REG_SP))))
+   (clobber (reg:CC REG_CC))]
   ""
   "pop %0"
   [(set_attr "cc" "none")
@@ -6858,7 +6875,8 @@
   [(set (match_operand:SF 0 "register_operand"             "=r")
         (unspec:SF [(match_operand:SF 1 "register_operand"  "0")
                     (match_operand:SF 2 "register_operand"  "r")]
-                   UNSPEC_COPYSIGN))]
+                   UNSPEC_COPYSIGN))
+   (clobber (reg:CC REG_CC))]
   ""
   "bst %D2,7\;bld %D0,7"
   [(set_attr "length" "2")
@@ -7116,7 +7134,8 @@
                         (match_operand:QI 2 "single_zero_operand"             "n"))
                 (and:QI (ashift:QI (match_operand:QI 3 "register_operand"     "r")
                                    (match_operand:QI 4 "const_0_to_7_operand" "n"))
-                        (match_operand:QI 5 "single_one_operand"              "n"))))]
+                        (match_operand:QI 5 "single_one_operand"              "n"))))
+   (clobber (reg:CC REG_CC))]
   "INTVAL(operands[4]) == exact_log2 (~INTVAL(operands[2]) & GET_MODE_MASK (QImode))
    && INTVAL(operands[4]) == exact_log2 (INTVAL(operands[5]) & GET_MODE_MASK (QImode))"
   "bst %3,0\;bld %0,%4"
@@ -7133,7 +7152,8 @@
                         (match_operand:QI 2 "single_zero_operand"          "n"))
                 (ashift:QI (and:QI (match_operand:QI 3 "register_operand"  "r")
                                    (const_int 1))
-                           (match_operand:QI 4 "const_0_to_7_operand"      "n"))))]
+                           (match_operand:QI 4 "const_0_to_7_operand"      "n"))))
+   (clobber (reg:CC REG_CC))]
   "INTVAL(operands[4]) == exact_log2 (~INTVAL(operands[2]) & GET_MODE_MASK (QImode))"
   "bst %3,0\;bld %0,%4"
   [(set_attr "length" "2")
@@ -7146,7 +7166,8 @@
         (ior:QI (and:QI (match_operand:QI 1 "register_operand"      "0")
                         (match_operand:QI 2 "single_zero_operand"   "n"))
                 (and:QI (match_operand:QI 3 "register_operand"      "r")
-                        (const_int 1))))]
+                        (const_int 1))))
+   (clobber (reg:CC REG_CC))]
   "0 == exact_log2 (~INTVAL(operands[2]) & GET_MODE_MASK (QImode))"
   "bst %3,0\;bld %0,0"
   [(set_attr "length" "2")
@@ -7159,7 +7180,8 @@
         (ior:QI (and:QI (match_operand:QI 1 "register_operand"       "0")
                         (const_int 127))
                 (ashift:QI (match_operand:QI 2 "register_operand"    "r")
-                           (const_int 7))))]
+                           (const_int 7))))
+   (clobber (reg:CC REG_CC))]
   ""
   "bst %2,0\;bld %0,7"
   [(set_attr "length" "2")
@@ -7173,7 +7195,8 @@
   [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "i,i,i"))
                          (const_int 1)
                          (match_operand:QI 1 "const_0_to_7_operand"        "n,n,n"))
-        (match_operand:QI 2 "nonmemory_operand"                            "L,P,r"))]
+        (match_operand:QI 2 "nonmemory_operand"                            "L,P,r"))
+   (clobber (reg:CC REG_CC))]
   ""
   "@
 	cbi %i0,%1
@@ -7186,7 +7209,8 @@
   [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "i"))
                          (const_int 1)
                          (match_operand:QI 1 "const_0_to_7_operand"        "n"))
-        (not:QI (match_operand:QI 2 "register_operand"                     "r")))]
+        (not:QI (match_operand:QI 2 "register_operand"                     "r")))
+   (clobber (reg:CC REG_CC))]
   ""
   "sbrs %2,0\;sbi %i0,%1\;sbrc %2,0\;cbi %i0,%1"
   [(set_attr "length" "4")
@@ -7341,13 +7365,15 @@
   [(set (match_operand:HISI 0 "register_operand"                 "=r")
         (xior:HISI
          (zero_extend:HISI (match_operand:QI 1 "register_operand" "r"))
-         (match_operand:HISI 2 "register_operand"                 "0")))]
+         (match_operand:HISI 2 "register_operand"                 "0")))
+   (clobber (reg:CC REG_CC))]
   ""
   "#"
   "reload_completed"
-  [(set (match_dup 3)
-        (xior:QI (match_dup 3)
-                 (match_dup 1)))]
+  [(parallel [(set (match_dup 3)
+                   (xior:QI (match_dup 3)
+                            (match_dup 1)))
+              (clobber (reg:CC REG_CC))])]
   {
     operands[3] = simplify_gen_subreg (QImode, operands[0], <MODE>mode, 0);
   })
@@ -7505,12 +7531,12 @@
   })
 
 (define_insn_and_split "*extzv.qihi2"
-  [(parallel [(set (match_operand:HI 0 "register_operand"                      "=r")
-                   (zero_extend:HI
-                    (zero_extract:QI (match_operand:QI 1 "register_operand"     "r")
-                                     (const_int 1)
-                                     (match_operand:QI 2 "const_0_to_7_operand" "n"))))
-              (clobber (reg:CC REG_CC))])]
+  [(set (match_operand:HI 0 "register_operand"                      "=r")
+        (zero_extend:HI
+         (zero_extract:QI (match_operand:QI 1 "register_operand"     "r")
+                          (const_int 1)
+                          (match_operand:QI 2 "const_0_to_7_operand" "n"))))
+   (clobber (reg:CC REG_CC))]
   ""
   "#"
   ""
