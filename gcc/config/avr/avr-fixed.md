@@ -305,7 +305,8 @@
               (clobber (reg:HI 22))
               (clobber (reg:CC REG_CC))])
    (parallel [(set (match_operand:ALL2QA 0 "register_operand" "")
-                   (reg:ALL2QA 24))])]
+                   (reg:ALL2QA 24))
+              (clobber (reg:CC REG_CC))])]
   "AVR_HAVE_MUL"
   {
     avr_fix_inputs (operands, 1 << 2, regmask (<MODE>mode, 18));

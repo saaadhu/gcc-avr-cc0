@@ -5210,8 +5210,8 @@
                 (match_operand:ORDERED234 2 "nonmemory_operand" "")])
              (label_ref (match_operand 3 "" ""))
              (pc)))
-      (clobber (reg:CC REG_CC))
-      (clobber (match_scratch:QI 4 ""))])])
+      (clobber (match_scratch:QI 4 ""))
+      (clobber (reg:CC REG_CC))])])
 
 ;; "*cbranchqi4"
 ;; "*cbranchqq4"  "*cbranchuqq4"
@@ -5234,7 +5234,7 @@
                            [(reg:CC REG_CC) (const_int 0)])
                          (label_ref (match_dup 3))
                          (pc)))
-           (clobber (reg:CC REG_CC))])]
+       (clobber (reg:CC REG_CC))])]
    "")
 
 ;; "*cbranchsi4"  "*cbranchsq4"  "*cbranchusq4"  "*cbranchsa4"  "*cbranchusa4"
@@ -5246,8 +5246,8 @@
                 (match_operand:ALL4 2 "nonmemory_operand" "Y00,r ,M,M ,n Ynn")])
              (label_ref (match_operand 3 "" ""))
              (pc)))
-   (clobber (reg:CC REG_CC))
-   (clobber (match_scratch:QI 4 "=X  ,X ,X,&d,&d"))]
+   (clobber (match_scratch:QI 4 "=X  ,X ,X,&d,&d"))
+   (clobber (reg:CC REG_CC))]
    ""
    "#"
    "reload_completed"
@@ -5272,8 +5272,8 @@
                 (match_operand:PSI 2 "nonmemory_operand" "L,r,s ,s  ,M,n")])
              (label_ref (match_operand 3 "" ""))
              (pc)))
-   (clobber (reg:CC REG_CC))
-   (clobber (match_scratch:QI 4 "=X,X,&d,&d ,X,&d"))]
+   (clobber (match_scratch:QI 4 "=X,X,&d,&d ,X,&d"))
+   (clobber (reg:CC REG_CC))]
    ""
    "#"
    "reload_completed"
@@ -5298,8 +5298,8 @@
                 (match_operand:ALL2 2 "nonmemory_operand" "Y00,Y00,r,s ,s  ,M,n Ynn")])
              (label_ref (match_operand 3 "" ""))
              (pc)))
-   (clobber (reg:CC REG_CC))
-   (clobber (match_scratch:QI 4 "=X  ,X  ,X,&d,&d ,X,&d"))]
+   (clobber (match_scratch:QI 4 "=X  ,X  ,X,&d,&d ,X,&d"))
+   (clobber (reg:CC REG_CC))]
    ""
    "#"
    "reload_completed"
@@ -5744,26 +5744,27 @@
   [(parallel [(set (match_dup 5)
                    (plus:SI (match_operand:SI 0 "register_operand")
                             (match_operand:SI 1 "const_int_operand")))
-              (clobber (scratch:QI))])
-   (parallel [(set (cc0)
-                   (compare (match_dup 5)
-                            (match_operand:SI 2 "const_int_operand")))
-              (clobber (scratch:QI))])
+              (clobber (scratch:QI))
+              (clobber (reg:CC REG_CC))])
 
-   (set (pc)
-        (if_then_else (gtu (cc0)
-                           (const_int 0))
-                      (label_ref (match_operand 4))
-                      (pc)))
+   (parallel [(set (pc)
+                   (if_then_else (gtu (match_dup 5)
+                                      (match_operand:SI 2 "const_int_operand"))
+                                 (label_ref (match_operand 4))
+                                 (pc)))
+              (clobber (scratch:QI))
+              (clobber (reg:CC REG_CC))])
 
-   (set (match_dup 7)
-        (match_dup 6))
+   (parallel [(set (match_dup 7)
+                   (match_dup 6))
+              (clobber (reg:CC REG_CC))])
 
    (parallel [(set (pc)
                    (unspec:HI [(match_dup 7)] UNSPEC_INDEX_JMP))
               (use (label_ref (match_dup 3)))
               (clobber (match_dup 7))
-              (clobber (match_dup 8))])]
+              (clobber (match_dup 8))
+              (clobber (reg:CC REG_CC))])]
   ""
   {
     operands[1] = simplify_unary_operation (NEG, SImode, operands[1], SImode);
@@ -5792,9 +5793,10 @@
 ;; "casesi_qi_sequence"
 ;; "casesi_hi_sequence"
 (define_insn "casesi_<mode>_sequence"
-  [(set (match_operand:SI 0 "register_operand")
-        (match_operator:SI 9 "extend_operator"
-                           [(match_operand:QIHI 10 "register_operand")]))
+  [(parallel [(set (match_operand:SI 0 "register_operand")
+                   (match_operator:SI 9 "extend_operator"
+                                      [(match_operand:QIHI 10 "register_operand")]))
+              (clobber (reg:CC REG_CC))])
 
    ;; What follows is a matcher for code from casesi.
    ;; We keep the same operand numbering (except for $9 and $10
@@ -5802,26 +5804,25 @@
    (parallel [(set (match_operand:SI 5 "register_operand")
                    (plus:SI (match_dup 0)
                             (match_operand:SI 1 "const_int_operand")))
-              (clobber (scratch:QI))])
-   (parallel [(set (reg:CC REG_CC)
-                   (compare:CC (match_dup 5)
-                               (match_operand:SI 2 "const_int_operand")))
-              (clobber (scratch:QI))])
-
-   (set (pc)
-        (if_then_else (gtu (reg:CC REG_CC)
-                           (const_int 0))
-                      (label_ref (match_operand 4))
-                      (pc)))
-
-   (set (match_operand:HI 7 "register_operand")
-        (match_operand:HI 6))
+              (clobber (scratch:QI))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (pc)
+                   (if_then_else (gtu (match_dup 5)
+                                      (match_operand:SI 2 "const_int_operand"))
+                                 (label_ref (match_operand 4))
+                                 (pc)))
+              (clobber (scratch:QI))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_operand:HI 7 "register_operand")
+                   (match_operand:HI 6))
+              (clobber (reg:CC REG_CC))])
 
    (parallel [(set (pc)
                    (unspec:HI [(match_dup 7)] UNSPEC_INDEX_JMP))
               (use (label_ref (match_operand 3)))
               (clobber (match_dup 7))
-              (clobber (match_operand:QI 8))])]
+              (clobber (match_operand:QI 8))
+              (clobber (reg:CC REG_CC))])]
   "reload_completed && optimize
    && avr_casei_sequence_check_operands (operands)"
   { gcc_unreachable(); }
@@ -6505,16 +6506,18 @@
 ;; Just a helper for the next "official" expander.
 
 (define_expand "flash_segment1"
-  [(set (match_operand:QI 0 "register_operand" "")
-        (subreg:QI (match_operand:PSI 1 "register_operand" "")
-                   2))
+  [(parallel [(set (match_operand:QI 0 "register_operand" "")
+                   (subreg:QI (match_operand:PSI 1 "register_operand" "")
+                              2))
+              (clobber (reg:CC REG_CC))])
    (set (pc)
         (if_then_else (ge (match_dup 0)
                           (const_int 0))
                       (label_ref (match_operand 2 "" ""))
                       (pc)))
-   (set (match_dup 0)
-        (const_int -1))])
+   (parallel [(set (match_dup 0)
+                   (const_int -1))
+              (clobber (reg:CC REG_CC))])])
 
 (define_insn_and_split "*flash_segment1"
   [(set (pc)
@@ -6527,10 +6530,11 @@
    "reload_completed"
    [(set (reg:CC REG_CC)
          (compare:CC (match_dup 0) (const_int 0)))
-    (set (pc)
-         (if_then_else (ge (reg:CC REG_CC) (const_int 0))
-                       (label_ref (match_dup 1))
-                       (pc)))]
+    (parallel [(set (pc)
+                    (if_then_else (ge (reg:CC REG_CC) (const_int 0))
+                                  (label_ref (match_dup 1))
+                                  (pc)))
+               (clobber (reg:CC REG_CC))])]
    "")
 
 (define_expand "flash_segment"
