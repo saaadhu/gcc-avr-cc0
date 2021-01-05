@@ -95,77 +95,42 @@
 ;; "adddq3_insn" "addudq3_insn"
 ;; "addda3_insn" "adduda3_insn"
 ;; "addta3_insn" "adduta3_insn"
-(define_insn_and_split "add<mode>3_insn"
-  [(set (reg:ALL8 ACC_A)
-        (plus:ALL8 (reg:ALL8 ACC_A)
-                   (reg:ALL8 ACC_B)))]
-  "avr_have_dimode"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (reg:ALL8 ACC_A)
-                   (plus:ALL8 (reg:ALL8 ACC_A)
-                              (reg:ALL8 ACC_B)))
-   (clobber (reg:CC REG_CC))])])
-
-(define_insn "*add<mode>3_insn"
+(define_insn "add<mode>3_insn"
   [(set (reg:ALL8 ACC_A)
         (plus:ALL8 (reg:ALL8 ACC_A)
                    (reg:ALL8 ACC_B)))
    (clobber (reg:CC REG_CC))]
-  "avr_have_dimode && reload_completed"
-  "%~call __adddi3"
-  [(set_attr "adjust_len" "call")])
-
-(define_insn_and_split "adddi3_const8_insn"
-  [(set (reg:DI ACC_A)
-        (plus:DI (reg:DI ACC_A)
-                 (sign_extend:DI (reg:QI REG_X))))]
   "avr_have_dimode"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (reg:DI ACC_A)
-                   (plus:DI (reg:DI ACC_A)
-                            (sign_extend:DI (reg:QI REG_X))))
-              (clobber (reg:CC REG_CC))])])
+  "%~call __adddi3"
+  [(set_attr "adjust_len" "call")
+   (set_attr "cc" "clobber")])
 
-(define_insn "*adddi3_const8_insn"
+(define_insn "adddi3_const8_insn"
   [(set (reg:DI ACC_A)
         (plus:DI (reg:DI ACC_A)
                  (sign_extend:DI (reg:QI REG_X))))
    (clobber (reg:CC REG_CC))]
-  "avr_have_dimode && reload_completed"
+  "avr_have_dimode"
   "%~call __adddi3_s8"
-  [(set_attr "adjust_len" "call")])
+  [(set_attr "adjust_len" "call")
+   (set_attr "cc" "clobber")])
 
 ;; "adddi3_const_insn"
 ;; "adddq3_const_insn" "addudq3_const_insn"
 ;; "addda3_const_insn" "adduda3_const_insn"
 ;; "addta3_const_insn" "adduta3_const_insn"
-(define_insn_and_split "add<mode>3_const_insn"
-  [(set (reg:ALL8 ACC_A)
-        (plus:ALL8 (reg:ALL8 ACC_A)
-                   (match_operand:ALL8 0 "const_operand" "n Ynn")))]
-  "avr_have_dimode
-   && !s8_operand (operands[0], VOIDmode)"
-   "#"
-   "&& reload_completed"
-   [(parallel [(set (reg:ALL8 ACC_A)
-                    (plus:ALL8 (reg:ALL8 ACC_A)
-                               (match_dup 0)))
-               (clobber (reg:CC REG_CC))])])
-
-(define_insn "*add<mode>3_const_insn"
+(define_insn "add<mode>3_const_insn"
   [(set (reg:ALL8 ACC_A)
         (plus:ALL8 (reg:ALL8 ACC_A)
                    (match_operand:ALL8 0 "const_operand" "n Ynn")))
    (clobber (reg:CC REG_CC))]
   "avr_have_dimode
-   && !s8_operand (operands[0], VOIDmode)
-   && reload_completed"
+   && !s8_operand (operands[0], VOIDmode)"
   {
     return avr_out_plus (insn, operands);
   }
-  [(set_attr "adjust_len" "plus")])
+  [(set_attr "adjust_len" "plus")
+   (set_attr "cc" "clobber")])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -205,53 +170,31 @@
 ;; "subdq3_insn" "subudq3_insn"
 ;; "subda3_insn" "subuda3_insn"
 ;; "subta3_insn" "subuta3_insn"
-(define_insn_and_split "sub<mode>3_insn"
-  [(set (reg:ALL8 ACC_A)
-        (minus:ALL8 (reg:ALL8 ACC_A)
-                    (reg:ALL8 ACC_B)))]
-  "avr_have_dimode"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (reg:ALL8 ACC_A)
-                   (minus:ALL8 (reg:ALL8 ACC_A)
-                               (reg:ALL8 ACC_B)))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*sub<mode>3_insn"
+(define_insn "sub<mode>3_insn"
   [(set (reg:ALL8 ACC_A)
         (minus:ALL8 (reg:ALL8 ACC_A)
                     (reg:ALL8 ACC_B)))
    (clobber (reg:CC REG_CC))]
-  "avr_have_dimode && reload_completed"
+  "avr_have_dimode"
   "%~call __subdi3"
-  [(set_attr "adjust_len" "call")])
+  [(set_attr "adjust_len" "call")
+   (set_attr "cc" "set_czn")])
 
 ;; "subdi3_const_insn"
 ;; "subdq3_const_insn" "subudq3_const_insn"
 ;; "subda3_const_insn" "subuda3_const_insn"
 ;; "subta3_const_insn" "subuta3_const_insn"
-(define_insn_and_split "sub<mode>3_const_insn"
-  [(set (reg:ALL8 ACC_A)
-        (minus:ALL8 (reg:ALL8 ACC_A)
-                    (match_operand:ALL8 0 "const_operand" "n Ynn")))]
-  "avr_have_dimode"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (reg:ALL8 ACC_A)
-                   (minus:ALL8 (reg:ALL8 ACC_A)
-                               (match_dup 0)))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*sub<mode>3_const_insn"
+(define_insn "sub<mode>3_const_insn"
   [(set (reg:ALL8 ACC_A)
         (minus:ALL8 (reg:ALL8 ACC_A)
                     (match_operand:ALL8 0 "const_operand" "n Ynn")))
    (clobber (reg:CC REG_CC))]
-  "avr_have_dimode && reload_completed"
+  "avr_have_dimode"
   {
     return avr_out_plus (insn, operands);
   }
-  [(set_attr "adjust_len" "plus")])
+  [(set_attr "adjust_len" "plus")
+   (set_attr "cc" "clobber")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Signed Saturating Addition and Subtraction
@@ -282,49 +225,27 @@
     DONE;
   })
 
-(define_insn_and_split "<code_stdname><mode>3_insn"
-  [(set (reg:ALL8S ACC_A)
-        (ss_addsub:ALL8S (reg:ALL8S ACC_A)
-                         (reg:ALL8S ACC_B)))]
-  "avr_have_dimode"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (reg:ALL8S ACC_A)
-                   (ss_addsub:ALL8S (reg:ALL8S ACC_A)
-                                    (reg:ALL8S ACC_B)))
-             (clobber (reg:CC REG_CC))])])
-
-(define_insn "*<code_stdname><mode>3_insn"
+(define_insn "<code_stdname><mode>3_insn"
   [(set (reg:ALL8S ACC_A)
         (ss_addsub:ALL8S (reg:ALL8S ACC_A)
                          (reg:ALL8S ACC_B)))
    (clobber (reg:CC REG_CC))]
-  "avr_have_dimode && reload_completed"
-  "%~call __<code_stdname><mode>3"
-  [(set_attr "adjust_len" "call")])
-
-(define_insn_and_split "<code_stdname><mode>3_const_insn"
-  [(set (reg:ALL8S ACC_A)
-        (ss_addsub:ALL8S (reg:ALL8S ACC_A)
-                         (match_operand:ALL8S 0 "const_operand" "n Ynn")))]
   "avr_have_dimode"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (reg:ALL8S ACC_A)
-                   (ss_addsub:ALL8S (reg:ALL8S ACC_A)
-                                    (match_dup 0)))
-              (clobber (reg:CC REG_CC))])])
+  "%~call __<code_stdname><mode>3"
+  [(set_attr "adjust_len" "call")
+   (set_attr "cc" "clobber")])
 
-(define_insn "*<code_stdname><mode>3_const_insn"
+(define_insn "<code_stdname><mode>3_const_insn"
   [(set (reg:ALL8S ACC_A)
         (ss_addsub:ALL8S (reg:ALL8S ACC_A)
                          (match_operand:ALL8S 0 "const_operand" "n Ynn")))
    (clobber (reg:CC REG_CC))]
-  "avr_have_dimode && reload_completed"
+  "avr_have_dimode"
   {
     return avr_out_plus (insn, operands);
   }
-  [(set_attr "adjust_len" "plus")])
+  [(set_attr "adjust_len" "plus")
+   (set_attr "cc" "clobber")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Unsigned Saturating Addition and Subtraction
@@ -355,49 +276,27 @@
     DONE;
   })
 
-(define_insn_and_split "<code_stdname><mode>3_insn"
-  [(set (reg:ALL8U ACC_A)
-        (us_addsub:ALL8U (reg:ALL8U ACC_A)
-                         (reg:ALL8U ACC_B)))]
-  "avr_have_dimode"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (reg:ALL8U ACC_A)
-                   (us_addsub:ALL8U (reg:ALL8U ACC_A)
-                                    (reg:ALL8U ACC_B)))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*<code_stdname><mode>3_insn"
+(define_insn "<code_stdname><mode>3_insn"
   [(set (reg:ALL8U ACC_A)
         (us_addsub:ALL8U (reg:ALL8U ACC_A)
                          (reg:ALL8U ACC_B)))
    (clobber (reg:CC REG_CC))]
-  "avr_have_dimode && reload_completed"
-  "%~call __<code_stdname><mode>3"
-  [(set_attr "adjust_len" "call")])
-
-(define_insn_and_split "<code_stdname><mode>3_const_insn"
-  [(set (reg:ALL8U ACC_A)
-        (us_addsub:ALL8U (reg:ALL8U ACC_A)
-                         (match_operand:ALL8U 0 "const_operand" "n Ynn")))]
   "avr_have_dimode"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (reg:ALL8U ACC_A)
-                   (us_addsub:ALL8U (reg:ALL8U ACC_A)
-                                    (match_operand:ALL8U 0 "const_operand" "n Ynn")))
-              (clobber (reg:CC REG_CC))])])
+  "%~call __<code_stdname><mode>3"
+  [(set_attr "adjust_len" "call")
+   (set_attr "cc" "clobber")])
 
-(define_insn "*<code_stdname><mode>3_const_insn"
+(define_insn "<code_stdname><mode>3_const_insn"
   [(set (reg:ALL8U ACC_A)
         (us_addsub:ALL8U (reg:ALL8U ACC_A)
                          (match_operand:ALL8U 0 "const_operand" "n Ynn")))
    (clobber (reg:CC REG_CC))]
-  "avr_have_dimode && reload_completed"
+  "avr_have_dimode"
   {
     return avr_out_plus (insn, operands);
   }
-  [(set_attr "adjust_len" "plus")])
+  [(set_attr "adjust_len" "plus")
+   (set_attr "cc" "clobber")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Negation
@@ -416,23 +315,14 @@
     DONE;
   })
 
-(define_insn_and_split "negdi2_insn"
-  [(set (reg:DI ACC_A)
-        (neg:DI (reg:DI ACC_A)))]
-  "avr_have_dimode"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (reg:DI ACC_A)
-                   (neg:DI (reg:DI ACC_A)))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*negdi2_insn"
+(define_insn "negdi2_insn"
   [(set (reg:DI ACC_A)
         (neg:DI (reg:DI ACC_A)))
    (clobber (reg:CC REG_CC))]
-  "avr_have_dimode && reload_completed"
+  "avr_have_dimode"
   "%~call __negdi2"
-  [(set_attr "adjust_len" "call")])
+  [(set_attr "adjust_len" "call")
+   (set_attr "cc" "clobber")])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -440,12 +330,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_expand "conditional_jump"
-  [(set (pc)
-        (if_then_else
-         (match_operator 0 "ordered_comparison_operator" [(reg:CC REG_CC)
-                                                          (const_int 0)])
-         (label_ref (match_operand 1 "" ""))
-         (pc)))]
+  [(parallel
+     [(set (pc)
+           (if_then_else
+             (match_operator 0 "ordered_comparison_operator" [(reg:CC REG_CC)
+                                                              (const_int 0)])
+           (label_ref (match_operand 1 "" ""))
+           (pc)))
+      (clobber (reg:CC REG_CC))])]
   "avr_have_dimode")
 
 ;; "cbranchdi4"
@@ -453,14 +345,13 @@
 ;; "cbranchda4" "cbranchuda4"
 ;; "cbranchta4" "cbranchuta4"
 (define_expand "cbranch<mode>4"
-  [(set (pc)
-        (if_then_else (match_operator 0 "ordered_comparison_operator"
-                        [(match_operand:ALL8 1 "register_operand"  "")
-                         (match_operand:ALL8 2 "nonmemory_operand" "")])
-         (label_ref (match_operand 3 "" ""))
-         (pc)))]
+  [(parallel [(match_operand:ALL8 1 "register_operand" "")
+              (match_operand:ALL8 2 "nonmemory_operand" "")
+              (match_operator 0 "ordered_comparison_operator" [(cc0)
+                                                               (const_int 0)])
+              (label_ref (match_operand 3 "" ""))])]
   "avr_have_dimode"
-   {
+  {
     rtx acc_a = gen_rtx_REG (<MODE>mode, ACC_A);
 
     avr_fix_inputs (operands, 1 << 2, regmask (<MODE>mode, ACC_A));
@@ -491,7 +382,8 @@
                         [(reg:ALL8 ACC_A)
                          (reg:ALL8 ACC_B)])
          (label_ref (match_operand 1 "" ""))
-         (pc)))]
+         (pc)))
+   (clobber (reg:CC REG_CC))]
   "avr_have_dimode"
   "#"
   "&& reload_completed"
@@ -509,10 +401,11 @@
 (define_insn "compare_<mode>2"
   [(set (reg:CC REG_CC)
         (compare:CC (reg:ALL8 ACC_A)
-                 (reg:ALL8 ACC_B)))]
+                    (reg:ALL8 ACC_B)))]
   "reload_completed && avr_have_dimode"
   "%~call __cmpdi2"
-  [(set_attr "adjust_len" "call")])
+  [(set_attr "adjust_len" "call")
+   (set_attr "cc" "compare")])
 
 (define_insn_and_split "cbranch_const8_di2_split"
   [(set (pc)
@@ -520,7 +413,8 @@
                         [(reg:DI ACC_A)
                          (sign_extend:DI (reg:QI REG_X))])
          (label_ref (match_operand 1 "" ""))
-         (pc)))]
+         (pc)))
+   (clobber (reg:CC REG_CC))]
   "avr_have_dimode"
   "#"
   "&& reload_completed"
@@ -534,10 +428,11 @@
 (define_insn "compare_const8_di2"
   [(set (reg:CC REG_CC)
         (compare:CC (reg:DI ACC_A)
-                 (sign_extend:DI (reg:QI REG_X))))]
+                    (sign_extend:DI (reg:QI REG_X))))]
   "reload_completed && avr_have_dimode"
   "%~call __cmpdi2_s8"
-  [(set_attr "adjust_len" "call")])
+  [(set_attr "adjust_len" "call")
+   (set_attr "cc" "compare")])
 
 (define_insn_and_split "cbranch_const_<mode>2_split"
   [(set (pc)
@@ -546,6 +441,7 @@
                          (match_operand:ALL8 1 "const_operand" "n Ynn")])
          (label_ref (match_operand 2 "" ""))
          (pc)))
+   (clobber (reg:CC REG_CC))
    (clobber (match_scratch:QI 3 "=&d"))]
   "avr_have_dimode
    && !s8_operand (operands[1], VOIDmode)"
@@ -566,7 +462,7 @@
 (define_insn "compare_const_<mode>2"
   [(set (reg:CC REG_CC)
         (compare:CC (reg:ALL8 ACC_A)
-                 (match_operand:ALL8 0 "const_operand" "n Ynn")))
+                    (match_operand:ALL8 0 "const_operand" "n Ynn")))
    (clobber (match_operand:QI 1 "register_operand" "=&d"))]
   "reload_completed
    && avr_have_dimode
@@ -574,7 +470,8 @@
   {
     return avr_out_compare64 (insn, operands, NULL);
   }
-  [(set_attr "adjust_len" "compare64")])
+  [(set_attr "adjust_len" "compare64")
+   (set_attr "cc" "compare")])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -617,26 +514,15 @@
 ;; "ashludq3_insn"  "ashrudq3_insn"  "lshrudq3_insn"  "rotludq3_insn"
 ;; "ashluda3_insn"  "ashruda3_insn"  "lshruda3_insn"  "rotluda3_insn"
 ;; "ashluta3_insn"  "ashruta3_insn"  "lshruta3_insn"  "rotluta3_insn"
-(define_insn_and_split "<code_stdname><mode>3_insn"
-  [(set (reg:ALL8 ACC_A)
-        (di_shifts:ALL8 (reg:ALL8 ACC_A)
-                        (reg:QI 16)))]
-  "avr_have_dimode"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (reg:ALL8 ACC_A)
-                   (di_shifts:ALL8 (reg:ALL8 ACC_A)
-                                   (reg:QI 16)))
-              (clobber (reg:CC REG_CC))])])
-
-(define_insn "*<code_stdname><mode>3_insn"
+(define_insn "<code_stdname><mode>3_insn"
   [(set (reg:ALL8 ACC_A)
         (di_shifts:ALL8 (reg:ALL8 ACC_A)
                         (reg:QI 16)))
    (clobber (reg:CC REG_CC))]
-  "avr_have_dimode && reload_completed"
+  "avr_have_dimode"
   "%~call __<code_stdname>di3"
-  [(set_attr "adjust_len" "call")])
+  [(set_attr "adjust_len" "call")
+   (set_attr "cc" "clobber")])
 
 ;; "umulsidi3"
 ;; "mulsidi3"
@@ -660,25 +546,7 @@
 
 ;; "umulsidi3_insn"
 ;; "mulsidi3_insn"
-
-(define_insn_and_split "<extend_u>mulsidi3_insn"
-  [(set (reg:DI ACC_A)
-        (mult:DI (any_extend:DI (reg:SI 18))
-                 (any_extend:DI (reg:SI 22))))
-   (clobber (reg:HI REG_X))
-   (clobber (reg:HI REG_Z))]
-  "avr_have_dimode
-   && AVR_HAVE_MUL"
-   "#"
-   "&& reload_completed"
-   [(parallel [(set (reg:DI ACC_A)
-                    (mult:DI (any_extend:DI (reg:SI 18))
-                             (any_extend:DI (reg:SI 22))))
-               (clobber (reg:HI REG_X))
-               (clobber (reg:HI REG_Z))
-               (clobber (reg:CC REG_CC))])])
-
-(define_insn "*<extend_u>mulsidi3_insn"
+(define_insn "<extend_u>mulsidi3_insn"
   [(set (reg:DI ACC_A)
         (mult:DI (any_extend:DI (reg:SI 18))
                  (any_extend:DI (reg:SI 22))))
@@ -686,7 +554,7 @@
    (clobber (reg:HI REG_Z))
    (clobber (reg:CC REG_CC))]
   "avr_have_dimode
-   && AVR_HAVE_MUL
-   && reload_completed"
+   && AVR_HAVE_MUL"
   "%~call __<extend_u>mulsidi3"
-  [(set_attr "adjust_len" "call")])
+  [(set_attr "adjust_len" "call")
+   (set_attr "cc" "clobber")])
