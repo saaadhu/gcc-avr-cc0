@@ -456,7 +456,8 @@
 ;; zero REG_ARGS_SIZE.  This is equivalent to a move from FP.
 (define_split
   [(set (reg:HI REG_SP)
-        (match_operand:HI 0 "register_operand" ""))]
+        (match_operand:HI 0 "register_operand" ""))
+   (clobber (reg:CC REG_CC))]
   "reload_completed
    && frame_pointer_needed
    && !cfun->calls_alloca
@@ -4689,7 +4690,8 @@
   
 (define_split
   [(set (match_operand:HI 0 "register_operand")
-        (match_operand:HI 1 "reg_or_0_operand"))]
+        (match_operand:HI 1 "reg_or_0_operand"))
+   (clobber (reg:CC REG_CC))]
   "optimize
    && reload_completed
    && GENERAL_REG_P (operands[0])
@@ -4709,10 +4711,11 @@
 ;; Split iorhi3, iorpsi3, iorsi3.
 ;; Split xorhi3, xorpsi3, xorsi3.
 (define_split
-  [(parallel [(set (match_operand:HISI 0 "register_operand")
-                   (bitop:HISI (match_dup 0)
-                               (match_operand:HISI 1 "register_operand")))
-              (clobber (scratch:QI))])]
+  [(set (match_operand:HISI 0 "register_operand")
+        (bitop:HISI (match_dup 0)
+                    (match_operand:HISI 1 "register_operand")))
+   (clobber (scratch:QI))
+   (clobber (reg:CC REG_CC))]
   "optimize
    && reload_completed"
   [(const_int 1)]
