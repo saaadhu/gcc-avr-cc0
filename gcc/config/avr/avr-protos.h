@@ -139,6 +139,8 @@ regmask (machine_mode mode, unsigned regno)
 extern void avr_fix_inputs (rtx*, unsigned, unsigned);
 extern bool avr_emit3_fix_outputs (rtx (*)(rtx,rtx,rtx), rtx*, unsigned, unsigned);
 
+extern machine_mode avr_select_cc_mode (enum rtx_code, rtx, rtx);
+
 extern rtx lpm_reg_rtx;
 extern rtx lpm_addr_reg_rtx;
 extern rtx tmp_reg_rtx;

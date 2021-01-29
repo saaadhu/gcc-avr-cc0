@@ -607,3 +607,9 @@ extern int avr_accumulate_outgoing_args (void);
 #define SYMBOL_FLAG_IO_LOW	(SYMBOL_FLAG_MACH_DEP << 4)
 #define SYMBOL_FLAG_IO		(SYMBOL_FLAG_MACH_DEP << 5)
 #define SYMBOL_FLAG_ADDRESS	(SYMBOL_FLAG_MACH_DEP << 6)
+
+#define SELECT_CC_MODE(op, x, y) avr_select_cc_mode(op, x, y)
+
+/* Enable compare elimination pass.  */
+#undef TARGET_FLAGS_REGNUM
+#define TARGET_FLAGS_REGNUM REG_CC

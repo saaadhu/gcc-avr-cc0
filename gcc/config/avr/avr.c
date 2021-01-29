@@ -160,7 +160,7 @@ static const char* out_movsi_mr_r (rtx_insn *, rtx[], int*);
 static int get_sequence_length (rtx_insn *insns);
 static int sequent_regs_live (void);
 static const char *ptrreg_to_str (int);
-static const char *cond_string (enum rtx_code);
+static const char *cond_string (enum rtx_code, machine_mode mode);
 static int avr_num_arg_regs (machine_mode, const_tree);
 static int avr_operand_rtx_cost (rtx, machine_mode, enum rtx_code,
                                  int, bool);
@@ -2652,9 +2652,9 @@ ptrreg_to_str (int regno)
    Used in conditional jump constructing  */
 
 static const char*
-cond_string (enum rtx_code code)
+cond_string (enum rtx_code code, machine_mode mode)
 {
-  bool cc_overflow_unusable = false;
+  bool cc_overflow_unusable = (mode == CC_CZNmode);
 
   switch (code)
     {
@@ -2976,9 +2976,11 @@ avr_print_operand (FILE *file, rtx x, int code)
   else if (GET_CODE (x) == CONST_STRING)
     fputs (XSTR (x, 0), file);
   else if (code == 'j')
-    fputs (cond_string (GET_CODE (x)), file);
+    fputs (cond_string (GET_CODE (x), GET_MODE (XEXP (x, 0))), file);
   else if (code == 'k')
-    fputs (cond_string (reverse_condition (GET_CODE (x))), file);
+    fputs (cond_string (reverse_condition (GET_CODE (x)),
+                        GET_MODE (XEXP (x, 0))),
+           file);
   else
     avr_print_operand_address (file, VOIDmode, x);
 }
@@ -3036,7 +3038,7 @@ const char*
 ret_cond_branch (rtx x, int len, int reverse)
 {
   RTX_CODE cond = reverse ? reverse_condition (GET_CODE (x)) : GET_CODE (x);
-  bool cc_overflow_unusable = false;
+  bool cc_overflow_unusable = GET_MODE (XEXP (x, 0)) == CC_CZNmode;
 
   switch (cond)
     {
@@ -9509,7 +9511,7 @@ avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
 static unsigned char
 avr_class_max_nregs (reg_class_t rclass, machine_mode mode)
 {
-  if (rclass == CC_REG && mode == CCmode)
+  if (rclass == CC_REG)
 	return 1;
 
   return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
@@ -11785,13 +11787,13 @@ avr_reorg_remove_redundant_compare (rtx_insn *insn1)
 
   target = XEXP (XEXP (ifelse1, 1), 0);
   cond = XEXP (ifelse1, 0);
-  jump = emit_jump_insn_after (gen_branch_unspec (target, cond), insn1);
+  jump = emit_jump_insn_after (gen_branch_unspeccc (target, cond), insn1);
 
   JUMP_LABEL (jump) = JUMP_LABEL (branch1);
 
   target = XEXP (XEXP (ifelse2, 1), 0);
   cond = gen_rtx_fmt_ee (code, VOIDmode, cc_reg_rtx, const0_rtx);
-  jump = emit_jump_insn_after (gen_branch_unspec (target, cond), insn2);
+  jump = emit_jump_insn_after (gen_branch_unspeccc (target, cond), insn2);
 
   JUMP_LABEL (jump) = JUMP_LABEL (branch2);
 
@@ -12028,7 +12030,7 @@ jump_over_one_insn_p (rtx_insn *insn, rtx dest)
 static unsigned int
 avr_hard_regno_nregs (unsigned int regno, machine_mode mode)
 {
-  if (regno == REG_CC && mode == CCmode)
+  if (regno == REG_CC)
     return 1;
 
   return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
@@ -12043,7 +12045,7 @@ static bool
 avr_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (regno == REG_CC)
-    return mode == CCmode;
+    return mode == CCmode || mode == CC_CZNmode;
 
   /* NOTE: 8-bit values must not be disallowed for R28 or R29.
         Disallowing QI et al. in these regs might lead to code like
@@ -14524,6 +14526,30 @@ avr_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
   return NULL;
 }
 
+machine_mode
+avr_select_cc_mode (enum rtx_code op, rtx x, rtx y)
+{
+  gcc_assert (reload_completed);
+
+  if (GET_CODE (x) == MINUS || GET_CODE(x) == PLUS
+      || GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
+      || GET_CODE (x) == LSHIFTRT || GET_CODE (x) == NEG
+	  || GET_CODE (x) == NOT)
+    return CC_CZNmode;
+
+  return CCmode;
+}
+
+static machine_mode
+avr_cc_modes_compatible (machine_mode m1, machine_mode m2) {
+  if (m1 == CCmode)
+	return m2;
+  if (m2 == CCmode)
+	return m1;
+
+  return VOIDmode;
+}
+
 
 
 /* Initialize the GCC target structure.  */
@@ -14712,6 +14738,9 @@ avr_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
 
 #undef  TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST avr_md_asm_adjust
+
+#undef TARGET_CC_MODES_COMPATIBLE
+#define TARGET_CC_MODES_COMPATIBLE avr_cc_modes_compatible
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
