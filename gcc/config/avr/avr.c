@@ -14531,6 +14531,11 @@ avr_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 {
   gcc_assert (reload_completed);
 
+  if ((op == EQ || op == NE || op == LT || op == GT || op == LE || op == GE)
+      && ((GET_CODE (x) == AND) || GET_CODE (x) == IOR || GET_CODE (x) == XOR
+          || GET_CODE (x) == ZERO_EXTRACT))
+    return CC_ZNmode;
+
   if (GET_CODE (x) == MINUS || GET_CODE(x) == PLUS
       || GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
       || GET_CODE (x) == LSHIFTRT || GET_CODE (x) == NEG

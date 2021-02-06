@@ -115,6 +115,9 @@
                    plus,ldi,unspecified"
   (const_string "unspecified"))
 
+(define_attr "cc_zn" "none,set_zn,clobber,unspecified"
+  (const_string "unspecified"))
+
 (define_attr "type" "branch,branch1,arith,xcall"
   (const_string "arith"))
 
@@ -199,10 +202,24 @@
         (compare:CC_CZN (match_dup 1) (const_int 0)))
    (set (match_dup 0) (match_dup 1))])
 
+(define_subst_attr "setzn" "setzn_subst" "" "_setzn")
+(define_subst_attr "cc_zn" "setzn_subst" "" "_zn")
+
+(define_subst "setzn_subst"
+  [(set (match_operand 0)
+        (match_operand 1))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed"
+  [(set (reg:CC_ZN REG_CC)
+        (compare:CC_ZN (match_dup 1) (const_int 0)))
+   (set (match_dup 0) (match_dup 1))])
+
 (define_attr "enabled" ""
   (if_then_else
-    (not (ior (eq_attr "cc_czn" "set_czn")
-             (eq_attr "cc_czn" "unspecified")))
+    (ior (not (ior (eq_attr "cc_czn" "set_czn")
+                   (eq_attr "cc_czn" "unspecified")))
+         (not (ior (eq_attr "cc_zn" "set_zn")
+                   (eq_attr "cc_zn" "unspecified"))))
      (const_int 0)
   (cond [(eq_attr "isa" "standard")
          (const_int 1)
@@ -292,7 +309,7 @@
 (define_mode_iterator SPLIT34 [SI SF PSI
                                SQ USQ SA USA])
 
-(define_mode_iterator AVRcc [CC CC_CZN])
+(define_mode_iterator AVRcc [CC CC_CZN CC_ZN])
 
 ;; Define code iterators
 ;; Define two incarnations so that we can build the cross product.
@@ -4329,7 +4346,7 @@
                            (match_dup 2)))
               (clobber (reg:CC REG_CC))])])
 
-(define_insn "*andqi3"
+(define_insn "*andqi3<setzn>"
   [(set (match_operand:QI 0 "register_operand"       "=??r,d,*l")
         (and:QI (match_operand:QI 1 "register_operand" "%0,0,0")
                 (match_operand:QI 2 "nonmemory_operand" "r,i,Ca1")))
@@ -4339,7 +4356,8 @@
 	and %0,%2
 	andi %0,lo8(%2)
 	* return avr_out_bitop (insn, operands, NULL);"
-  [(set_attr "length" "1,1,2")])
+  [(set_attr "length" "1,1,2")
+   (set_attr "cc<cc_zn>" "set_zn,set_zn,none")])
 
 (define_insn_and_split "andhi3"
   [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
@@ -4469,7 +4487,7 @@
                            (match_dup 2)))
               (clobber (reg:CC REG_CC))])])
 
-(define_insn "*iorqi3"
+(define_insn "*iorqi3<setzn>"
   [(set (match_operand:QI 0 "register_operand"       "=??r,d,*l")
         (ior:QI (match_operand:QI 1 "register_operand" "%0,0,0")
                 (match_operand:QI 2 "nonmemory_operand" "r,i,Co1")))
@@ -4479,7 +4497,8 @@
 	or %0,%2
 	ori %0,lo8(%2)
         * return avr_out_bitop (insn, operands, NULL);"
-  [(set_attr "length" "1,1,2")])
+  [(set_attr "length" "1,1,2")
+   (set_attr "cc<cc_zn>" "set_zn,set_zn,none")])
 
 (define_insn_and_split "iorhi3"
   [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
@@ -4593,14 +4612,15 @@
                            (match_dup 2)))
               (clobber (reg:CC REG_CC))])])
 
-(define_insn "*xorqi3"
+(define_insn "*xorqi3<setzn>"
   [(set (match_operand:QI 0 "register_operand" "=r")
         (xor:QI (match_operand:QI 1 "register_operand" "%0")
                 (match_operand:QI 2 "register_operand" "r")))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   "eor %0,%2"
-  [(set_attr "length" "1")])
+  [(set_attr "length" "1")
+   (set_attr "cc<cc_zn>" "set_zn")])
 
 (define_insn_and_split "xorhi3"
   [(set (match_operand:HI 0 "register_operand"       "=??r,r  ,r")
@@ -9218,7 +9238,7 @@
                    (match_dup 2))
               (clobber (reg:CC REG_CC))])])
 
-(define_insn "*insv.reg"
+(define_insn "*insv.reg<setzn>"
   [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r,d,d,l,l")
                          (const_int 1)
                          (match_operand:QI 1 "const_0_to_7_operand" "n,n,n,n,n"))
@@ -9231,7 +9251,8 @@
 	ori %0,lo8(1<<%1)
 	clt\;bld %0,%1
 	set\;bld %0,%1"
-  [(set_attr "length" "2,1,1,2,2")])
+  [(set_attr "length" "2,1,1,2,2")
+   (set_attr "cc<cc_zn>" "none,set_zn,set_zn,none,none")])
 
 ;; Insert bit $2.$3 into $0.$1
 (define_insn "*insv.extract"
@@ -9554,7 +9575,7 @@
                                     (match_dup 2)))
               (clobber (reg:CC REG_CC))])])
 
-(define_insn "*extzv"
+(define_insn "*extzv<setzn>"
   [(set (match_operand:QI 0 "register_operand"                   "=*d,*d,*d,*d,r")
         (zero_extract:QI (match_operand:QI 1 "register_operand"     "0,r,0,0,r")
                          (const_int 1)
@@ -9567,7 +9588,8 @@
 	lsr %0\;andi %0,1
 	swap %0\;andi %0,1
 	bst %1,%2\;clr %0\;bld %0,0"
-  [(set_attr "length" "1,2,2,2,3")])
+  [(set_attr "length" "1,2,2,2,3")
+   (set_attr "cc<cc_zn>" "set_zn,set_zn,set_zn,set_zn,clobber")])
 
 (define_insn_and_split "*extzv.qihi1"
   [(set (match_operand:HI 0 "register_operand"                     "=r")
